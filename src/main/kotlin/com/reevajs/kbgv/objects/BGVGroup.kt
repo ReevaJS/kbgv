@@ -32,16 +32,16 @@ data class BGVGroup(
     }
 
     companion object : IBGVReader<BGVGroup> {
-        override fun read(reader: ExpandingByteBuffer): BGVGroup {
-            val name = IBGVPoolObject.read(reader)
-            val shortName = IBGVPoolObject.read(reader)
-            val method = IBGVPoolObject.read(reader)
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVGroup {
+            val name = IBGVPoolObject.read(reader, context)
+            val shortName = IBGVPoolObject.read(reader, context)
+            val method = IBGVPoolObject.read(reader, context)
             val bci = reader.getInt()
-            val props = BGVProps.read(reader)
+            val props = BGVProps.read(reader, context)
 
             val groups = mutableListOf<IBGVGroupDocumentGraph>()
             while (reader.peekByte() != BGVToken.CLOSE_GROUP)
-                groups.add(IBGVGroupDocumentGraph.read(reader))
+                groups.add(IBGVGroupDocumentGraph.read(reader, context))
             reader.getByte()
 
             return BGVGroup(name, shortName, method, bci, props, groups)

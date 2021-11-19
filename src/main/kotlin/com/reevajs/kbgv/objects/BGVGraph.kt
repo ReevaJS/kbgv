@@ -19,12 +19,12 @@ data class BGVGraph(
     }
 
     companion object : IBGVReader<BGVGraph> {
-        override fun read(reader: ExpandingByteBuffer): BGVGraph {
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVGraph {
             val id = reader.getInt()
             val format = reader.getString()
             val argCount = reader.getInt()
-            val args = (0 until argCount).map { IBGVPropObject.read(reader) }
-            val body = BGVGraphBody.read(reader)
+            val args = (0 until argCount).map { IBGVPropObject.read(reader, context) }
+            val body = BGVGraphBody.read(reader, context)
             return BGVGraph(id, format, args, body)
         }
     }

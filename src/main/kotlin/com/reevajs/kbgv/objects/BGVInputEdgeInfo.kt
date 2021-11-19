@@ -6,7 +6,7 @@ data class BGVInputEdgeInfo(
     val indirect: Boolean,
     val name: IBGVPoolObject,
     val type: IBGVPoolObject,
-) : IBGVWriter {
+) : IBGVObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(if (indirect) 1 else 0)
         name.write(writer)
@@ -18,9 +18,13 @@ data class BGVInputEdgeInfo(
     }
 
     companion object : IBGVReader<BGVInputEdgeInfo> {
-        override fun read(reader: ExpandingByteBuffer): BGVInputEdgeInfo {
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVInputEdgeInfo {
             val indirect = reader.getByte().toInt() == 1
-            return BGVInputEdgeInfo(indirect, IBGVPoolObject.read(reader), IBGVPoolObject.read(reader))
+            return BGVInputEdgeInfo(
+                indirect,
+                IBGVPoolObject.read(reader, context),
+                IBGVPoolObject.read(reader, context),
+            )
         }
     }
 }

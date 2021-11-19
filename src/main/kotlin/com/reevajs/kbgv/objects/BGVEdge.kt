@@ -2,7 +2,7 @@ package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
 
-interface IBGVEdge : IBGVWriter
+interface IBGVEdge : IBGVObject
 
 class BGVDirectEdge(val node: Int) : IBGVEdge {
     override fun write(writer: ExpandingByteBuffer) {
@@ -10,7 +10,7 @@ class BGVDirectEdge(val node: Int) : IBGVEdge {
     }
 
     companion object : IBGVReader<BGVDirectEdge> {
-        override fun read(reader: ExpandingByteBuffer): BGVDirectEdge {
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVDirectEdge {
             return BGVDirectEdge(reader.getInt())
         }
     }
@@ -23,7 +23,7 @@ class BGVIndirectEdge(val nodes: List<Int>) : IBGVEdge {
     }
 
     companion object : IBGVReader<BGVIndirectEdge> {
-        override fun read(reader: ExpandingByteBuffer): BGVIndirectEdge {
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVIndirectEdge {
             val size = reader.getShort()
             return BGVIndirectEdge((0 until size).map { reader.getInt() })
         }

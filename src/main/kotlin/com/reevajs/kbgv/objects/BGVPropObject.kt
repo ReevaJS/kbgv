@@ -3,19 +3,19 @@ package com.reevajs.kbgv.objects
 import com.reevajs.kbgv.BGVToken
 import com.reevajs.kbgv.ExpandingByteBuffer
 
-sealed interface IBGVPropObject : IBGVWriter {
+sealed interface IBGVPropObject : IBGVObject {
     companion object : IBGVReader<IBGVPropObject> {
-        override fun read(reader: ExpandingByteBuffer): IBGVPropObject {
+        override fun read(reader: ExpandingByteBuffer, context: Context): IBGVPropObject {
             return when (reader.getByte()) {
-                BGVToken.PROPERTY_POOL -> BGVPoolProperty(IBGVPoolObject.read(reader))
+                BGVToken.PROPERTY_POOL -> BGVPoolProperty(IBGVPoolObject.read(reader, context))
                 BGVToken.PROPERTY_INT -> BGVIntProperty(reader.getInt())
                 BGVToken.PROPERTY_LONG -> BGVLongProperty(reader.getLong())
                 BGVToken.PROPERTY_DOUBLE -> BGVDoubleProperty(reader.getDouble())
                 BGVToken.PROPERTY_FLOAT -> BGVFloatProperty(reader.getFloat())
                 BGVToken.PROPERTY_TRUE -> BGVTrueProperty
                 BGVToken.PROPERTY_FALSE -> BGVFalseProperty
-                BGVToken.PROPERTY_ARRAY -> BGVArrayProperty.read(reader)
-                BGVToken.PROPERTY_SUBGRAPH -> BGVSubgraphProperty(BGVGraphBody.read(reader))
+                BGVToken.PROPERTY_ARRAY -> BGVArrayProperty.read(reader, context)
+                BGVToken.PROPERTY_SUBGRAPH -> BGVSubgraphProperty(BGVGraphBody.read(reader, context))
                 else -> throw IllegalStateException()
             }
         }
@@ -117,7 +117,7 @@ class BGVArrayProperty(
     }
 
     companion object : IBGVReader<BGVArrayProperty> {
-        override fun read(reader: ExpandingByteBuffer): BGVArrayProperty {
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVArrayProperty {
             val type = reader.getByte()
 
             val count = reader.getInt()
@@ -125,7 +125,7 @@ class BGVArrayProperty(
                 when (type) {
                     BGVToken.PROPERTY_DOUBLE -> reader.getDouble()
                     BGVToken.PROPERTY_INT -> reader.getInt()
-                    BGVToken.PROPERTY_POOL -> IBGVPoolObject.read(reader)
+                    BGVToken.PROPERTY_POOL -> IBGVPoolObject.read(reader, context)
                     else -> throw IllegalStateException()
                 }
             }

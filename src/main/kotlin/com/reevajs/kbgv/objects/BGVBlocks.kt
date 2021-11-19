@@ -6,7 +6,7 @@ data class BGVBlocks(
     val id: Int,
     val nodes: List<Int>,
     val followers: List<Int>,
-) : IBGVWriter {
+) : IBGVObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putInt(id)
         writer.putInt(nodes.size)
@@ -22,7 +22,7 @@ data class BGVBlocks(
     }
 
     companion object : IBGVReader<BGVBlocks> {
-        override fun read(reader: ExpandingByteBuffer): BGVBlocks {
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVBlocks {
             val id = reader.getInt()
             val nodeCount = reader.getInt()
             val nodes = (0 until nodeCount).map { reader.getInt() }

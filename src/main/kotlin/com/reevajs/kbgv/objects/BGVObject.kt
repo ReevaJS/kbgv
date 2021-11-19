@@ -14,7 +14,7 @@ data class BGVObject(
     val major: Byte,
     val minor: Byte,
     val components: List<IBGVGroupDocumentGraph>,
-) : IBGVWriter {
+) : IBGVObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putBytes(magic)
         writer.putByte(major)
@@ -25,7 +25,7 @@ data class BGVObject(
     companion object : IBGVReader<BGVObject> {
         private val magic = "BIGV".toByteArray()
 
-        override fun read(reader: ExpandingByteBuffer): BGVObject {
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVObject {
             val bytes = reader.getBytes(4)
             if (!bytes.contentEquals(magic))
                 throw IllegalStateException()
@@ -36,7 +36,7 @@ data class BGVObject(
             val components = mutableListOf<IBGVGroupDocumentGraph>()
 
             while (!reader.done())
-                components.add(IBGVGroupDocumentGraph.read(reader))
+                components.add(IBGVGroupDocumentGraph.read(reader, context))
 
             return BGVObject(majorVersion, minorVersion, components)
         }

@@ -9,7 +9,7 @@ data class BGVNode(
     val props: BGVProps,
     val edgesIn: List<IBGVEdge>,
     val edgesOut: List<IBGVEdge>,
-) : IBGVWriter {
+) : IBGVObject {
     init {
         if (nodeClass.inputs.size != edgesIn.size)
             throw IllegalArgumentException()
@@ -39,23 +39,26 @@ data class BGVNode(
     }
 
     companion object : IBGVReader<BGVNode> {
-        override fun read(reader: ExpandingByteBuffer): BGVNode {
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVNode {
             val id = reader.getInt()
-            val nodeClass = IBGVPoolObject.read(reader)
+            val nodeClass = IBGVPoolObject.read(reader, context).let {
+                if (it is BGVPoolObjectRef) context[it.id] else it
+            }
+
             if (nodeClass !is BGVNodeClassPool)
                 throw IllegalStateException()
 
             val hasPredecessor = reader.getByte().toInt() != 0
-            val props = BGVProps.read(reader)
+            val props = BGVProps.read(reader, context)
             val edgesIn = (0 until nodeClass.inputs.size).map {
                 if (nodeClass.inputs[it].indirect) {
-                    BGVIndirectEdge.read(reader)
-                } else BGVDirectEdge.read(reader)
+                    BGVIndirectEdge.read(reader, context)
+                } else BGVDirectEdge.read(reader, context)
             }
             val edgesOut = (0 until nodeClass.outputs.size).map {
                 if (nodeClass.outputs[it].indirect) {
-                    BGVIndirectEdge.read(reader)
-                } else BGVDirectEdge.read(reader)
+                    BGVIndirectEdge.read(reader, context)
+                } else BGVDirectEdge.read(reader, context)
             }
             return BGVNode(id, nodeClass, hasPredecessor, props, edgesIn, edgesOut)
         }

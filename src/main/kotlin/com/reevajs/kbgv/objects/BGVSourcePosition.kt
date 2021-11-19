@@ -8,7 +8,7 @@ data class BGVSourcePosition(
     val line: Int,
     val start: Int,
     val end: Int,
-) : IBGVWriter {
+) : IBGVObject {
     override fun write(writer: ExpandingByteBuffer) {
         uri.write(writer)
         writer.putString(location)
@@ -18,9 +18,9 @@ data class BGVSourcePosition(
     }
 
     companion object : IBGVReader<BGVSourcePosition> {
-        override fun read(reader: ExpandingByteBuffer): BGVSourcePosition {
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVSourcePosition {
             return BGVSourcePosition(
-                IBGVPoolObject.read(reader),
+                IBGVPoolObject.read(reader, context),
                 reader.getString(),
                 reader.getInt(),
                 reader.getInt(),

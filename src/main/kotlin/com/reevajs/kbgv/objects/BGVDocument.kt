@@ -14,8 +14,8 @@ data class BGVDocument(val props: BGVProps) : IBGVGroupDocumentGraph {
     }
 
     companion object : IBGVReader<BGVDocument> {
-        override fun read(reader: ExpandingByteBuffer): BGVDocument {
-            return BGVDocument(BGVProps.read(reader))
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVDocument {
+            return BGVDocument(BGVProps.read(reader, context))
         }
     }
 }
