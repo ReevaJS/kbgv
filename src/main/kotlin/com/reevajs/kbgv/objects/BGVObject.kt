@@ -13,7 +13,7 @@ import com.reevajs.kbgv.ExpandingByteBuffer
 data class BGVObject(
     val major: Byte,
     val minor: Byte,
-    val components: Collection<IBGVGroupDocumentGraph>,
+    val components: List<IBGVGroupDocumentGraph>,
 ) : IBGVWriter {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putBytes(magic)

@@ -97,7 +97,7 @@ sealed interface IBGVPoolObject : IBGVWriter {
                     reader.getByte()
                     BGVNonnullPool.read(reader)
                 }
-                else -> BGVPoolReference.read(reader)
+                else -> BGVPoolObjectRef.read(reader)
             }
         }
     }
@@ -177,7 +177,7 @@ class BGVEnumPool(
 
 sealed interface IBGVClassPoolType : IBGVWriter
 
-class BGVClassPoolEnumType(val values: Collection<IBGVPoolObject>) : IBGVClassPoolType {
+class BGVClassPoolEnumType(val values: List<IBGVPoolObject>) : IBGVClassPoolType {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.ENUM_KLASS)
         writer.putInt(values.size)
@@ -261,8 +261,8 @@ class BGVNodeClassPool(
     id: UShort,
     val nodeClass: IBGVPoolObject,
     val nameTemplate: String,
-    val inputs: Collection<BGVInputEdgeInfo>,
-    val outputs: Collection<BGVOutputEdgeInfo>,
+    val inputs: List<BGVInputEdgeInfo>,
+    val outputs: List<BGVOutputEdgeInfo>,
 ) : BGVNonnullPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
@@ -321,7 +321,7 @@ class BGVFieldPool(
 
 class BGVNodeSignaturePool(
     id: UShort,
-    val args: Collection<IBGVPoolObject>,
+    val args: List<IBGVPoolObject>,
 ) : BGVNonnullPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
@@ -341,7 +341,7 @@ class BGVNodeSourcePositionPool(
     id: UShort,
     val method: IBGVPoolObject,
     val bci: Int, // bytecode index
-    val sourcePositions: Collection<BGVSourcePosition>,
+    val sourcePositions: List<BGVSourcePosition>,
     val caller: IBGVPoolObject,
 ) : BGVNonnullPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
@@ -387,7 +387,7 @@ class BGVNodePool(
     }
 }
 
-class BGVPoolReference(private val token: Byte, private val id: UShort) : IBGVPoolObject {
+class BGVPoolObjectRef(private val token: Byte, private val id: UShort) : IBGVPoolObject {
     init {
         if (token !in ALLOWED_TOKENS)
             throw IllegalArgumentException("$token is not an allowable pool reference token type")
@@ -398,7 +398,9 @@ class BGVPoolReference(private val token: Byte, private val id: UShort) : IBGVPo
         writer.putShort(id.toShort())
     }
 
-    companion object : IBGVReader<BGVPoolReference> {
+    override fun toString() = "Ref #$id"
+
+    companion object : IBGVReader<BGVPoolObjectRef> {
         private val ALLOWED_TOKENS = setOf(
             BGVToken.POOL_STRING,
             BGVToken.POOL_ENUM,
@@ -411,11 +413,11 @@ class BGVPoolReference(private val token: Byte, private val id: UShort) : IBGVPo
             BGVToken.POOL_NODE,
         )
 
-        override fun read(reader: ExpandingByteBuffer): BGVPoolReference {
+        override fun read(reader: ExpandingByteBuffer): BGVPoolObjectRef {
             val token = reader.getByte()
             if (token !in ALLOWED_TOKENS)
                 throw IllegalStateException()
-            return BGVPoolReference(token, reader.getShort().toUShort())
+            return BGVPoolObjectRef(token, reader.getShort().toUShort())
         }
     }
 }

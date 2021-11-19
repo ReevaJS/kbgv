@@ -7,8 +7,8 @@ data class BGVNode(
     val nodeClass: BGVNodeClassPool,
     val hasPredecessor: Boolean,
     val props: BGVProps,
-    val edgesIn: Collection<BGVEdge>,
-    val edgesOut: Collection<BGVEdge>,
+    val edgesIn: List<IBGVEdge>,
+    val edgesOut: List<IBGVEdge>,
 ) : IBGVWriter {
     init {
         if (nodeClass.inputs.size != edgesIn.size)
@@ -23,18 +23,40 @@ data class BGVNode(
         writer.putByte(if (hasPredecessor) 1 else 0)
         props.write(writer)
 
-        edgesIn.forEach { it.write(writer) }
-        edgesOut.forEach { it.write(writer) }
+        edgesIn.forEachIndexed { index, edge ->
+            val isIndirect = nodeClass.inputs[index].indirect
+            if (isIndirect != (edge is BGVIndirectEdge))
+                throw IllegalStateException()
+            edge.write(writer)
+        }
+
+        edgesOut.forEachIndexed { index, edge ->
+            val isIndirect = nodeClass.outputs[index].indirect
+            if (isIndirect != (edge is BGVIndirectEdge))
+                throw IllegalStateException()
+            edge.write(writer)
+        }
     }
 
     companion object : IBGVReader<BGVNode> {
         override fun read(reader: ExpandingByteBuffer): BGVNode {
             val id = reader.getInt()
-            val nodeClass = BGVNodeClassPool.read(reader)
+            val nodeClass = IBGVPoolObject.read(reader)
+            if (nodeClass !is BGVNodeClassPool)
+                throw IllegalStateException()
+
             val hasPredecessor = reader.getByte().toInt() != 0
             val props = BGVProps.read(reader)
-            val edgesIn = (0 until nodeClass.inputs.size).map { BGVEdge.read(reader) }
-            val edgesOut = (0 until nodeClass.outputs.size).map { BGVEdge.read(reader) }
+            val edgesIn = (0 until nodeClass.inputs.size).map {
+                if (nodeClass.inputs[it].indirect) {
+                    BGVIndirectEdge.read(reader)
+                } else BGVDirectEdge.read(reader)
+            }
+            val edgesOut = (0 until nodeClass.outputs.size).map {
+                if (nodeClass.outputs[it].indirect) {
+                    BGVIndirectEdge.read(reader)
+                } else BGVDirectEdge.read(reader)
+            }
             return BGVNode(id, nodeClass, hasPredecessor, props, edgesIn, edgesOut)
         }
     }

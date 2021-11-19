@@ -84,7 +84,7 @@ object BGVFalseProperty : IBGVPropObject {
 }
 
 class BGVArrayProperty(
-    val values: Collection<Any>, // Collection<Double | Int | IBGVPoolObject>
+    val values: List<Any>, // List<Double | Int | IBGVPoolObject>
 ) : IBGVPropObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.PROPERTY_ARRAY)
@@ -118,7 +118,19 @@ class BGVArrayProperty(
 
     companion object : IBGVReader<BGVArrayProperty> {
         override fun read(reader: ExpandingByteBuffer): BGVArrayProperty {
-            TODO("Not yet implemented")
+            val type = reader.getByte()
+
+            val count = reader.getInt()
+            val values = (0 until count).map {
+                when (type) {
+                    BGVToken.PROPERTY_DOUBLE -> reader.getDouble()
+                    BGVToken.PROPERTY_INT -> reader.getInt()
+                    BGVToken.PROPERTY_POOL -> IBGVPoolObject.read(reader)
+                    else -> throw IllegalStateException()
+                }
+            }
+
+            return BGVArrayProperty(values)
         }
     }
 }

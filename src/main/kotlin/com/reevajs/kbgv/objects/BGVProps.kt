@@ -2,7 +2,7 @@ package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
 
-data class BGVProps(val props: Collection<BGVProp>) : IBGVWriter {
+data class BGVProps(val props: List<BGVProp>) : IBGVWriter {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putShort(props.size.toShort())
         props.forEach { it.write(writer) }

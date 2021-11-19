@@ -7,7 +7,7 @@ class KBGV {
     private var nodeId: Int = 0
     private var poolId: UShort = 0U
 
-    fun assemble(components: Collection<IBGVGroupDocumentGraph>) = BGVObject(
+    fun assemble(components: List<IBGVGroupDocumentGraph>) = BGVObject(
         BGVToken.MAJOR_VERSION,
         BGVToken.MINOR_VERSION,
         components,
@@ -19,8 +19,8 @@ class KBGV {
         nodeClass: BGVNodeClassPool,
         hasPredecessor: Boolean,
         props: BGVProps,
-        edgesIn: Collection<BGVEdge>,
-        edgesOut: Collection<BGVEdge>,
+        edgesIn: List<IBGVEdge>,
+        edgesOut: List<IBGVEdge>,
     ) = BGVNode(nodeId++, nodeClass, hasPredecessor, props, edgesIn, edgesOut)
 
     fun Int(value: Int) = BGVIntProperty(value)
@@ -39,7 +39,7 @@ class KBGV {
 
     fun Array(doubles: DoubleArray) = BGVArrayProperty(doubles.toList())
 
-    fun Array(arr: Collection<Any>) = BGVArrayProperty(arr)
+    fun Array(arr: List<Any>) = BGVArrayProperty(arr)
 
     fun Subgraph(graph: BGVGraphBody) = BGVSubgraphProperty(graph)
 
@@ -51,7 +51,7 @@ class KBGV {
 
     fun ClassPool(typeName: String) = BGVClassPool(poolId++, typeName, BGVClassPoolKlassType)
 
-    fun ClassPool(typeName: String, values: Collection<IBGVPoolObject>) =
+    fun ClassPool(typeName: String, values: List<IBGVPoolObject>) =
         BGVClassPool(poolId++, typeName, BGVClassPoolEnumType(values))
 
     fun MethodPool(
@@ -65,8 +65,8 @@ class KBGV {
     fun NodeClassPool(
         nodeClass: IBGVPoolObject,
         nameTemplate: String,
-        inputs: Collection<BGVInputEdgeInfo>,
-        outputs: Collection<BGVOutputEdgeInfo>,
+        inputs: List<BGVInputEdgeInfo>,
+        outputs: List<BGVOutputEdgeInfo>,
     ) = BGVNodeClassPool(poolId++, nodeClass, nameTemplate, inputs, outputs)
 
     fun FieldPool(
@@ -79,7 +79,7 @@ class KBGV {
     fun NodeSignaturePool(
         method: IBGVPoolObject,
         bci: Int,
-        sourcePositions: Collection<BGVSourcePosition>,
+        sourcePositions: List<BGVSourcePosition>,
         caller: IBGVPoolObject,
     ) = BGVNodeSourcePositionPool(poolId++, method, bci, sourcePositions, caller)
 
@@ -88,5 +88,5 @@ class KBGV {
         nodeClass: IBGVPoolObject,
     ) = BGVNodePool(poolId++, nodeId, nodeClass)
 
-    fun PoolRef(id: Int, type: Byte) = BGVPoolReference(type, id.toUShort())
+    fun PoolRef(id: Int, type: Byte) = BGVPoolObjectRef(type, id.toUShort())
 }

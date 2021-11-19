@@ -18,7 +18,7 @@ data class BGVGroup(
     val method: IBGVPoolObject,
     val bci: Int,
     val props: BGVProps,
-    val group: IBGVGroupDocumentGraph,
+    val groups: List<IBGVGroupDocumentGraph>,
 ) : IBGVGroupDocumentGraph {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.BEGIN_GROUP)
@@ -27,7 +27,7 @@ data class BGVGroup(
         method.write(writer)
         writer.putInt(bci)
         props.write(writer)
-        group.write(writer)
+        groups.forEach { it.write(writer) }
         writer.putByte(BGVToken.CLOSE_GROUP)
     }
 
@@ -38,8 +38,13 @@ data class BGVGroup(
             val method = IBGVPoolObject.read(reader)
             val bci = reader.getInt()
             val props = BGVProps.read(reader)
-            val group = IBGVGroupDocumentGraph.read(reader)
-            return BGVGroup(name, shortName, method, bci, props, group)
+
+            val groups = mutableListOf<IBGVGroupDocumentGraph>()
+            while (reader.peekByte() != BGVToken.CLOSE_GROUP)
+                groups.add(IBGVGroupDocumentGraph.read(reader))
+            reader.getByte()
+
+            return BGVGroup(name, shortName, method, bci, props, groups)
         }
     }
 }

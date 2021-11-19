@@ -49,9 +49,10 @@ Document {
 
 Graph {
   sint8 token = BEGIN_GRAPH
+  sint32 id
   String format
-  sint32 nodes_count
-  Node[nodes_count] nodes
+  sint32 args_count
+  PropObject[args_count] args
   GraphBody body
 }
 
@@ -73,7 +74,17 @@ Node {
 }
 
 Edge {
-  sint32[inputs_count] nodes
+  // Determined by Node.node_class.{inputs,outputs}.indirect 
+  DirectEdge | IndirectEdge
+}
+
+DirectEdge {
+  sint32 node
+}
+
+IndirectEdge {
+  sint16 node_count
+  sint32[node_count] nodes
 }
 
 Blocks {

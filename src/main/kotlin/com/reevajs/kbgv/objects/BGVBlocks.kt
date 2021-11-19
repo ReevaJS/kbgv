@@ -4,8 +4,8 @@ import com.reevajs.kbgv.ExpandingByteBuffer
 
 data class BGVBlocks(
     val id: Int,
-    val nodes: Collection<Int>,
-    val followers: Collection<Int>,
+    val nodes: List<Int>,
+    val followers: List<Int>,
 ) : IBGVWriter {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putInt(id)

@@ -4,8 +4,8 @@ import com.reevajs.kbgv.ExpandingByteBuffer
 
 data class BGVGraphBody(
     val props: BGVProps,
-    val nodes: Collection<BGVNode>,
-    val blocks: Collection<BGVBlocks>,
+    val nodes: List<BGVNode>,
+    val blocks: List<BGVBlocks>,
 ) : IBGVWriter {
     override fun write(writer: ExpandingByteBuffer) {
         props.write(writer)
