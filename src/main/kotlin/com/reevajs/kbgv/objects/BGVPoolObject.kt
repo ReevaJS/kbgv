@@ -340,11 +340,19 @@ class BGVNodeSignaturePool(
     }
 }
 
+data class SourcePosition(
+    val uri: IBGVPoolObject,
+    val location: String,
+    val line: Int,
+    val start: Int,
+    val end: Int,
+)
+
 class BGVNodeSourcePositionPool(
     id: UShort,
     val method: IBGVPoolObject,
     val bci: Int, // bytecode index
-    val sourcePositions: List<BGVSourcePosition>,
+    val sourcePositions: List<SourcePosition>,
     val caller: IBGVPoolObject,
 ) : BGVNonnullPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
@@ -352,7 +360,13 @@ class BGVNodeSourcePositionPool(
         writer.putByte(BGVToken.POOL_NODE_SOURCE_POSITION)
         method.write(writer)
         writer.putInt(bci)
-        sourcePositions.forEach { it.write(writer) }
+        sourcePositions.forEach {
+            it.uri.write(writer)
+            writer.putString(it.location)
+            writer.putInt(it.line)
+            writer.putInt(it.start)
+            writer.putInt(it.end)
+        }
         BGVNullPool.write(writer)
         caller.write(writer)
     }
@@ -361,9 +375,17 @@ class BGVNodeSourcePositionPool(
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVNodeSourcePositionPool {
             val method = IBGVPoolObject.read(reader, context)
             val bci = reader.getInt()
-            val sourcePositions = mutableListOf<BGVSourcePosition>()
-            while (reader.peekByte() != BGVToken.POOL_NULL)
-                sourcePositions.add(BGVSourcePosition.read(reader, context))
+            val sourcePositions = mutableListOf<SourcePosition>()
+            while (reader.peekByte() != BGVToken.POOL_NULL) {
+                sourcePositions.add(SourcePosition(
+                    IBGVPoolObject.read(reader, context),
+                    reader.getString(),
+                    reader.getInt(),
+                    reader.getInt(),
+                    reader.getInt(),
+                ))
+            }
+            reader.getByte()
             val caller = IBGVPoolObject.read(reader, context)
 
             return BGVNodeSourcePositionPool(0U, method, bci, sourcePositions, caller)

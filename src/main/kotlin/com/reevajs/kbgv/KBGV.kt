@@ -79,7 +79,7 @@ class KBGV {
     fun NodeSignaturePool(
         method: IBGVPoolObject,
         bci: Int,
-        sourcePositions: List<BGVSourcePosition>,
+        sourcePositions: List<SourcePosition>,
         caller: IBGVPoolObject,
     ) = BGVNodeSourcePositionPool(poolId++, method, bci, sourcePositions, caller)
 
