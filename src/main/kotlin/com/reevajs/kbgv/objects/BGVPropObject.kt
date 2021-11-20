@@ -11,7 +11,7 @@ sealed interface IBGVPropObject : IBGVObject {
     companion object : IBGVReader<IBGVPropObject> {
         override fun read(reader: ExpandingByteBuffer, context: Context): IBGVPropObject {
             return when (reader.getByte()) {
-                BGVToken.PROPERTY_POOL -> BGVPoolProperty(IBGVPoolObject.read(reader, context))
+                BGVToken.PROPERTY_POOL -> BGVPoolProperty(IBGVPoolObject.read(reader, context).toNullType())
                 BGVToken.PROPERTY_INT -> BGVIntProperty(reader.getInt())
                 BGVToken.PROPERTY_LONG -> BGVLongProperty(reader.getLong())
                 BGVToken.PROPERTY_DOUBLE -> BGVDoubleProperty(reader.getDouble())
@@ -26,7 +26,7 @@ sealed interface IBGVPropObject : IBGVObject {
     }
 }
 
-data class BGVPoolProperty(val value: IBGVPoolObject) : IBGVPropObject {
+data class BGVPoolProperty(val value: IBGVPoolObject?) : IBGVPropObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.PROPERTY_POOL)
         value.write(writer)

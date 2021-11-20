@@ -2,6 +2,7 @@ package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.BGVToken
 import com.reevajs.kbgv.ExpandingByteBuffer
+import com.reevajs.kbgv.expectIs
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -16,9 +17,9 @@ import kotlinx.serialization.json.putJsonArray
  * }
  */
 data class BGVGroup(
-    val name: IBGVPoolObject,
-    val shortName: IBGVPoolObject,
-    val method: IBGVPoolObject,
+    val name: BGVStringPool,
+    val shortName: BGVStringPool,
+    val method: BGVMethodPool?,
     val bci: Int,
     val props: BGVProps,
     val children: List<IBGVGroupDocumentGraph>,
@@ -50,7 +51,7 @@ data class BGVGroup(
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVGroup {
             val name = IBGVPoolObject.read(reader, context)
             val shortName = IBGVPoolObject.read(reader, context)
-            val method = IBGVPoolObject.read(reader, context)
+            val method = IBGVPoolObject.read(reader, context).toNullType()
             val bci = reader.getInt()
             val props = BGVProps.read(reader, context)
 
@@ -58,6 +59,10 @@ data class BGVGroup(
             while (reader.peekByte() != BGVToken.CLOSE_GROUP)
                 children.add(IBGVGroupDocumentGraph.read(reader, context))
             reader.getByte()
+
+            expectIs<BGVStringPool>(name)
+            expectIs<BGVStringPool>(shortName)
+            expectIs<BGVMethodPool?>(method)
 
             return BGVGroup(name, shortName, method, bci, props, children)
         }

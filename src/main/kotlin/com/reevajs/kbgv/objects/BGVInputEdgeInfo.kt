@@ -1,12 +1,13 @@
 package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
+import com.reevajs.kbgv.expectIs
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
 data class BGVInputEdgeInfo(
     val indirect: Boolean,
-    val name: IBGVPoolObject,
+    val name: BGVStringPool,
     val type: IBGVPoolObject,
 ) : IBGVObject {
     override fun write(writer: ExpandingByteBuffer) {
@@ -29,11 +30,10 @@ data class BGVInputEdgeInfo(
     companion object : IBGVReader<BGVInputEdgeInfo> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVInputEdgeInfo {
             val indirect = reader.getByte().toInt() == 1
-            return BGVInputEdgeInfo(
-                indirect,
-                IBGVPoolObject.read(reader, context),
-                IBGVPoolObject.read(reader, context),
-            )
+            val name = IBGVPoolObject.read(reader, context)
+            expectIs<BGVStringPool>(name)
+            val type = IBGVPoolObject.read(reader, context)
+            return BGVInputEdgeInfo(indirect, name, type)
         }
     }
 }

@@ -5,7 +5,7 @@ plugins {
 
 group 'com.reevajs'
 version '1.0.0'
-def RELEASE = true
+def RELEASE = false
 
 repositories {
     mavenCentral()

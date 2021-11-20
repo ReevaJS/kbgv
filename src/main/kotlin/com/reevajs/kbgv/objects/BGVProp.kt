@@ -1,10 +1,11 @@
 package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
+import com.reevajs.kbgv.expectIs
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class BGVProp(val key: IBGVPoolObject, val value: IBGVPropObject) : IBGVObject {
+class BGVProp(val key: BGVStringPool, val value: IBGVPropObject) : IBGVObject {
     override fun write(writer: ExpandingByteBuffer) {
         key.write(writer)
         value.write(writer)
@@ -22,6 +23,7 @@ class BGVProp(val key: IBGVPoolObject, val value: IBGVPropObject) : IBGVObject {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVProp {
             val key = IBGVPoolObject.read(reader, context)
             val value = IBGVPropObject.read(reader, context)
+            expectIs<BGVStringPool>(key)
             return BGVProp(key, value)
         }
     }
