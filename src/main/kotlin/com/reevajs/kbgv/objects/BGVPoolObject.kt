@@ -87,17 +87,27 @@ import com.reevajs.kbgv.ExpandingByteBuffer
  */
 sealed interface IBGVPoolObject : IBGVObject {
     companion object : IBGVReader<IBGVPoolObject> {
+        private val ALLOWED_REF_TYPES = setOf(
+            BGVToken.POOL_STRING,
+            BGVToken.POOL_ENUM,
+            BGVToken.POOL_CLASS,
+            BGVToken.POOL_METHOD,
+            BGVToken.POOL_NODE_CLASS,
+            BGVToken.POOL_FIELD,
+            BGVToken.POOL_SIGNATURE,
+            BGVToken.POOL_NODE_SOURCE_POSITION,
+            BGVToken.POOL_NODE,
+        )
+
         override fun read(reader: ExpandingByteBuffer, context: Context): IBGVPoolObject {
-            return when (reader.peekByte()) {
-                BGVToken.POOL_NULL -> {
-                    reader.getByte()
-                    BGVNullPool
+            return when (val type = reader.getByte()) {
+                BGVToken.POOL_NULL -> BGVNullPool
+                BGVToken.POOL_NEW -> BGVNonnullPool.read(reader, context)
+                else -> {
+                    if (type !in ALLOWED_REF_TYPES)
+                        throw IllegalStateException()
+                    context[reader.getShort().toUShort()]
                 }
-                BGVToken.POOL_NEW -> {
-                    reader.getByte()
-                    BGVNonnullPool.read(reader, context)
-                }
-                else -> BGVPoolObjectRef.read(reader, context)
             }
         }
     }
@@ -424,41 +434,6 @@ class BGVNodePool(
     companion object : IBGVReader<BGVNodePool> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVNodePool {
             return BGVNodePool(0U, reader.getInt(), IBGVPoolObject.read(reader, context))
-        }
-    }
-}
-
-class BGVPoolObjectRef(val type: Byte, val id: UShort) : IBGVPoolObject {
-    init {
-        if (type !in ALLOWED_TOKENS)
-            throw IllegalArgumentException("$type is not an allowable pool reference token type")
-    }
-
-    override fun write(writer: ExpandingByteBuffer) {
-        writer.putByte(type)
-        writer.putShort(id.toShort())
-    }
-
-    override fun toString() = "Ref #$id"
-
-    companion object : IBGVReader<BGVPoolObjectRef> {
-        private val ALLOWED_TOKENS = setOf(
-            BGVToken.POOL_STRING,
-            BGVToken.POOL_ENUM,
-            BGVToken.POOL_CLASS,
-            BGVToken.POOL_METHOD,
-            BGVToken.POOL_NODE_CLASS,
-            BGVToken.POOL_FIELD,
-            BGVToken.POOL_SIGNATURE,
-            BGVToken.POOL_NODE_SOURCE_POSITION,
-            BGVToken.POOL_NODE,
-        )
-
-        override fun read(reader: ExpandingByteBuffer, context: Context): BGVPoolObjectRef {
-            val token = reader.getByte()
-            if (token !in ALLOWED_TOKENS)
-                throw IllegalStateException()
-            return BGVPoolObjectRef(token, reader.getShort().toUShort())
         }
     }
 }

@@ -41,10 +41,7 @@ data class BGVNode(
     companion object : IBGVReader<BGVNode> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVNode {
             val id = reader.getInt()
-            val nodeClass = IBGVPoolObject.read(reader, context).let {
-                if (it is BGVPoolObjectRef) context[it.id] else it
-            }
-
+            val nodeClass = IBGVPoolObject.read(reader, context)
             if (nodeClass !is BGVNodeClassPool)
                 throw IllegalStateException()
 

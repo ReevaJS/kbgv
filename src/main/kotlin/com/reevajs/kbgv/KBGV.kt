@@ -87,6 +87,4 @@ class KBGV {
         nodeId: Int,
         nodeClass: IBGVPoolObject,
     ) = BGVNodePool(poolId++, nodeId, nodeClass)
-
-    fun PoolRef(id: Int, type: Byte) = BGVPoolObjectRef(type, id.toUShort())
 }
