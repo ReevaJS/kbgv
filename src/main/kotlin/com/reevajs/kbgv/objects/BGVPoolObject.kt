@@ -295,7 +295,7 @@ class BGVNodeClassPool(
 
 class BGVFieldPool(
     id: UShort,
-    val fieldClass: IBGVPoolObject,
+    val declaringClass: IBGVPoolObject,
     val name: IBGVPoolObject,
     val typeName: IBGVPoolObject,
     val modifiers: Int,
