@@ -7,7 +7,7 @@ class ExpandingByteBuffer {
     private var buf: ByteBuffer
 
     constructor(order: ByteOrder) {
-        buf = ByteBuffer.allocateDirect(10_000).order(order)
+        buf = ByteBuffer.allocate(10_000).order(order)
     }
 
     constructor(array: ByteArray, order: ByteOrder) {
@@ -102,7 +102,10 @@ class ExpandingByteBuffer {
     }
 
     private fun ensureCapacity(capacity: Int) {
-        if (buf.limit() < capacity)
-            buf = ByteBuffer.allocateDirect(buf.limit() * 2).order(buf.order()).put(buf)
+        if (buf.limit() < buf.position() + capacity) {
+            val newBuf = ByteBuffer.allocate(buf.limit() * 2).order(buf.order())
+            newBuf.put(buf.array(), 0, buf.position())
+            buf = newBuf
+        }
     }
 }
