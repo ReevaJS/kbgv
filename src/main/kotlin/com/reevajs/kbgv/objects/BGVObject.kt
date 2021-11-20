@@ -1,6 +1,7 @@
 package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
+import com.reevajs.kbgv.expect
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -39,8 +40,7 @@ data class BGVObject(
 
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVObject {
             val bytes = reader.getBytes(4)
-            if (!bytes.contentEquals(magic))
-                throw IllegalStateException()
+            expect(bytes.contentEquals(magic))
 
             val majorVersion = reader.getByte()
             val minorVersion = reader.getByte()

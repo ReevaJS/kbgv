@@ -1,8 +1,6 @@
 package com.reevajs.kbgv.objects
 
-import com.reevajs.kbgv.BGVToken
-import com.reevajs.kbgv.ExpandingByteBuffer
-import com.reevajs.kbgv.expectIs
+import com.reevajs.kbgv.*
 import kotlinx.serialization.json.*
 import java.util.*
 
@@ -107,8 +105,7 @@ sealed interface IBGVPoolObject : IBGVObject {
                 BGVToken.POOL_NULL -> BGVNullPool
                 BGVToken.POOL_NEW -> BGVNonnullPool.read(reader, context)
                 else -> {
-                    if (type !in ALLOWED_REF_TYPES)
-                        throw IllegalStateException()
+                    expect(type in ALLOWED_REF_TYPES)
                     context[reader.getShort().toUShort()]
                 }
             }
@@ -152,7 +149,7 @@ sealed class BGVNonnullPool(id: UShort) : IBGVPoolObject {
                 BGVToken.POOL_SIGNATURE -> BGVNodeSignaturePool.read(reader, context)
                 BGVToken.POOL_NODE_SOURCE_POSITION -> BGVNodeSourcePositionPool.read(reader, context)
                 BGVToken.POOL_NODE -> BGVNodePool.read(reader, context)
-                else -> throw IllegalStateException()
+                else -> unreachable()
             }.also {
                 it.id = id
                 context[id] = it
@@ -290,7 +287,7 @@ class BGVClassPool(
             val type = when (reader.getByte()) {
                 BGVToken.KLASS -> BGVClassPoolKlassType
                 BGVToken.ENUM_KLASS -> BGVClassPoolEnumType.read(reader, context)
-                else -> throw IllegalStateException()
+                else -> unreachable()
             }
             return BGVClassPool(0U, typeName, type)
         }

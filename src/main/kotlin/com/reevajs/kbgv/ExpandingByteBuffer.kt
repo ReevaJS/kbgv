@@ -97,8 +97,7 @@ class ExpandingByteBuffer {
     }
 
     fun bytes(): ByteArray = let {
-        if (!buf.hasArray())
-            throw IllegalStateException("ExpandingByteBuffer expected array-backed buffer")
+        expect(buf.hasArray())
         buf.array()
     }
 

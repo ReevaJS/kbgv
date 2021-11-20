@@ -1,6 +1,8 @@
 package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
+import com.reevajs.kbgv.expect
+import com.reevajs.kbgv.expectIs
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -27,16 +29,12 @@ data class BGVNode(
         props.write(writer)
 
         edgesIn.forEachIndexed { index, edge ->
-            val isIndirect = nodeClass.inputs[index].indirect
-            if (isIndirect != (edge is BGVIndirectEdge))
-                throw IllegalStateException()
+            expect(nodeClass.inputs[index].indirect == (edge is BGVIndirectEdge))
             edge.write(writer)
         }
 
         edgesOut.forEachIndexed { index, edge ->
-            val isIndirect = nodeClass.outputs[index].indirect
-            if (isIndirect != (edge is BGVIndirectEdge))
-                throw IllegalStateException()
+            expect(nodeClass.outputs[index].indirect == (edge is BGVIndirectEdge))
             edge.write(writer)
         }
     }
@@ -59,8 +57,7 @@ data class BGVNode(
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVNode {
             val id = reader.getInt()
             val nodeClass = IBGVPoolObject.read(reader, context)
-            if (nodeClass !is BGVNodeClassPool)
-                throw IllegalStateException()
+            expectIs<BGVNodeClassPool>(nodeClass)
 
             val hasPredecessor = reader.getByte().toInt() != 0
             val props = BGVProps.read(reader, context)

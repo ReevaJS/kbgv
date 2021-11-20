@@ -1,7 +1,17 @@
+
 package com.reevajs.kbgv
 
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+
+fun unreachable(): Nothing = throw IllegalStateException()
+
+@OptIn(ExperimentalContracts::class)
+fun expect(condition: Boolean) {
+    contract { returns() implies condition }
+    if (!condition)
+        throw IllegalStateException()
+}
 
 @OptIn(ExperimentalContracts::class)
 inline fun <reified T : Any?> expectIs(obj: Any?) {

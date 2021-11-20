@@ -1,7 +1,6 @@
 package com.reevajs.kbgv.objects
 
-import com.reevajs.kbgv.BGVToken
-import com.reevajs.kbgv.ExpandingByteBuffer
+import com.reevajs.kbgv.*
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -20,7 +19,7 @@ sealed interface IBGVPropObject : IBGVObject {
                 BGVToken.PROPERTY_FALSE -> BGVFalseProperty
                 BGVToken.PROPERTY_ARRAY -> BGVArrayProperty.read(reader, context)
                 BGVToken.PROPERTY_SUBGRAPH -> BGVSubgraphProperty(BGVGraphBody.read(reader, context))
-                else -> throw IllegalStateException()
+                else -> unreachable()
             }
         }
     }
@@ -143,18 +142,15 @@ class BGVArrayProperty(
 
         when (type) {
             BGVToken.PROPERTY_DOUBLE -> values.forEach {
-                if (it !is Double)
-                    throw IllegalStateException()
+                expectIs<Double>(it)
                 writer.putDouble(it)
             }
             BGVToken.PROPERTY_INT -> values.forEach {
-                if (it !is Int)
-                    throw IllegalStateException()
+                expectIs<Int>(it)
                 writer.putInt(it)
             }
             else -> values.forEach {
-                if (it !is IBGVPoolObject)
-                    throw IllegalStateException()
+                expectIs<IBGVPoolObject>(it)
                 it.write(writer)
             }
         }
@@ -175,7 +171,7 @@ class BGVArrayProperty(
                     "double" -> add(it as Double)
                     "int" -> add(it as Int)
                     "pool" -> add((it as IBGVPoolObject).toJson())
-                    else -> throw IllegalStateException()
+                    else -> unreachable()
                 }
             }
         }
@@ -193,7 +189,7 @@ class BGVArrayProperty(
                     BGVToken.PROPERTY_DOUBLE -> reader.getDouble()
                     BGVToken.PROPERTY_INT -> reader.getInt()
                     BGVToken.PROPERTY_POOL -> IBGVPoolObject.read(reader, context)
-                    else -> throw IllegalStateException()
+                    else -> unreachable()
                 }
             }
 

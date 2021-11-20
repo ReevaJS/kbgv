@@ -2,6 +2,7 @@ package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.BGVToken
 import com.reevajs.kbgv.ExpandingByteBuffer
+import com.reevajs.kbgv.unreachable
 
 /**
  * GroupDocumentGraph {
@@ -15,7 +16,7 @@ sealed interface IBGVGroupDocumentGraph : IBGVObject {
                 BGVToken.BEGIN_GROUP -> BGVGroup.read(reader, context)
                 BGVToken.BEGIN_DOCUMENT -> BGVDocument.read(reader, context)
                 BGVToken.BEGIN_GRAPH -> BGVGraph.read(reader, context)
-                else -> throw IllegalStateException()
+                else -> unreachable()
             }
         }
     }
