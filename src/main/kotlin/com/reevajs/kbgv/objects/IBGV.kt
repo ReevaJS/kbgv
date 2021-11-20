@@ -1,6 +1,7 @@
 package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
+import kotlinx.serialization.json.JsonElement
 import java.nio.ByteOrder
 
 class Context {
@@ -25,6 +26,10 @@ interface IBGVObject {
         write(buf)
         return buf.bytes()
     }
+
+    fun toJson(): JsonElement
+
+    fun toJsonString(): String = toJson().toString()
 }
 
 interface IBGVReader<T> {

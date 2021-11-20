@@ -1,6 +1,9 @@
 package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 /**
  * BGV {
@@ -13,13 +16,22 @@ import com.reevajs.kbgv.ExpandingByteBuffer
 data class BGVObject(
     val major: Byte,
     val minor: Byte,
-    val components: List<IBGVGroupDocumentGraph>,
+    val children: List<IBGVGroupDocumentGraph>,
 ) : IBGVObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putBytes(magic)
         writer.putByte(major)
         writer.putByte(minor)
-        components.forEach { it.write(writer) }
+        children.forEach { it.write(writer) }
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "BGV")
+        put("major", major)
+        put("minor", minor)
+        putJsonArray("children") {
+            children.forEach { add(it.toJson()) }
+        }
     }
 
     companion object : IBGVReader<BGVObject> {
@@ -33,12 +45,12 @@ data class BGVObject(
             val majorVersion = reader.getByte()
             val minorVersion = reader.getByte()
 
-            val components = mutableListOf<IBGVGroupDocumentGraph>()
+            val children = mutableListOf<IBGVGroupDocumentGraph>()
 
             while (!reader.done())
-                components.add(IBGVGroupDocumentGraph.read(reader, context))
+                children.add(IBGVGroupDocumentGraph.read(reader, context))
 
-            return BGVObject(majorVersion, minorVersion, components)
+            return BGVObject(majorVersion, minorVersion, children)
         }
     }
 }

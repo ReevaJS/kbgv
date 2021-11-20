@@ -1,6 +1,8 @@
 package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 data class BGVInputEdgeInfo(
     val indirect: Boolean,
@@ -11,6 +13,13 @@ data class BGVInputEdgeInfo(
         writer.putByte(if (indirect) 1 else 0)
         name.write(writer)
         type.write(writer)
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "input_edge_info")
+        put("indirect", indirect)
+        put("name", name.toJson())
+        put("type", type.toJson())
     }
 
     override fun toString(): String {

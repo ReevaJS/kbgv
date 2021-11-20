@@ -1,6 +1,10 @@
 package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 data class BGVBlocks(
     val id: Int,
@@ -13,6 +17,17 @@ data class BGVBlocks(
         nodes.forEach(writer::putInt)
         writer.putInt(successors.size)
         successors.forEach(writer::putInt)
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "blocks")
+        put("id", id)
+        putJsonArray("nodes") {
+            nodes.forEach(::add)
+        }
+        putJsonArray("successors") {
+            successors.forEach(::add)
+        }
     }
 
     override fun toString(): String {

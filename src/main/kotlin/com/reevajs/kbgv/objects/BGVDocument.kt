@@ -2,11 +2,18 @@ package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.BGVToken
 import com.reevajs.kbgv.ExpandingByteBuffer
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 data class BGVDocument(val props: BGVProps) : IBGVGroupDocumentGraph {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.BEGIN_DOCUMENT)
         props.write(writer)
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "document")
+        put("props", props.toJson())
     }
 
     override fun toString() = "Document {$props}"

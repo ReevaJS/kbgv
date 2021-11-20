@@ -2,6 +2,8 @@ package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.BGVToken
 import com.reevajs.kbgv.ExpandingByteBuffer
+import kotlinx.serialization.json.*
+import java.util.*
 
 /**
  * PoolObject {
@@ -118,6 +120,11 @@ object BGVNullPool : IBGVPoolObject {
         writer.putByte(BGVToken.POOL_NULL)
     }
 
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("pool_type", "null")
+    }
+
     override fun toString() = "NullPool"
 }
 
@@ -160,6 +167,13 @@ class BGVStringPool(id: UShort, val string: String) : BGVNonnullPool(id) {
         writer.putString(string)
     }
 
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("pool_type", "string")
+        put("id", id.toInt())
+        put("value", string)
+    }
+
     override fun toString() = "StringPool {$string}"
 
     companion object : IBGVReader<BGVStringPool> {
@@ -179,6 +193,14 @@ class BGVEnumPool(
         writer.putByte(BGVToken.POOL_ENUM)
         enumClass.write(writer)
         writer.putInt(ordinal)
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("pool_type", "enum")
+        put("id", id.toInt())
+        put("enum_class", enumClass.toJson())
+        put("ordinal", ordinal)
     }
 
     override fun toString() = "EnumPool {class=$enumClass, ordinal=$ordinal}"
@@ -201,6 +223,14 @@ class BGVClassPoolEnumType(val values: List<IBGVPoolObject>) : IBGVClassPoolType
         }
     }
 
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("class_type", "enum_klass")
+        putJsonArray("values") {
+            values.forEach { add(it.toJson()) }
+        }
+    }
+
     override fun toString() = "ENUM_KLASS"
 
     companion object : IBGVReader<BGVClassPoolEnumType> {
@@ -216,6 +246,11 @@ object BGVClassPoolKlassType : IBGVClassPoolType {
         writer.putByte(BGVToken.KLASS)
     }
 
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("class_type", "klass")
+    }
+
     override fun toString() = "KLASS"
 }
 
@@ -229,6 +264,14 @@ class BGVClassPool(
         writer.putByte(BGVToken.POOL_CLASS)
         writer.putString(typeName)
         type.write(writer)
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("pool_type", "class")
+        put("id", id.toInt())
+        put("type_name", typeName)
+        put("type", type.toJson())
     }
 
     override fun toString() = "ClassPool {name=$typeName, type=$type}"
@@ -262,6 +305,19 @@ class BGVMethodPool(
         signature.write(writer)
         writer.putInt(modifiers)
         writer.putBytes(bytes)
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("pool_type", "string")
+        put("id", id.toInt())
+        put("declaring_class", declaringClass.toJson())
+        put("method_name", methodName.toJson())
+        put("signature", signature.toJson())
+        put("modifiers", modifiers)
+
+        val byteString = Base64.getEncoder().encodeToString(bytes)
+        put("bytes", byteString)
     }
 
     override fun toString() = "MethodPool {name=$methodName, sig=$signature, class=$declaringClass}"
@@ -298,6 +354,20 @@ class BGVNodeClassPool(
         outputs.forEach { it.write(writer) }
     }
 
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("pool_type", "node_class")
+        put("id", id.toInt())
+        put("node_class", nodeClass.toJson())
+        put("name_template", nameTemplate)
+        putJsonArray("inputs") {
+            inputs.forEach { add(it.toJson()) }
+        }
+        putJsonArray("outputs") {
+            outputs.forEach { add(it.toJson()) }
+        }
+    }
+
     override fun toString() = "NodeClassPool {class=$nodeClass, template=$nameTemplate}"
 
     companion object : IBGVReader<BGVNodeClassPool> {
@@ -331,6 +401,16 @@ class BGVFieldPool(
         writer.putInt(modifiers)
     }
 
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("pool_type", "field")
+        put("id", id.toInt())
+        put("declaring_class", declaringClass.toJson())
+        put("name", name.toJson())
+        put("type_name", typeName.toJson())
+        put("modifiers", modifiers)
+    }
+
     override fun toString() = "FieldPool {name=$name, class=$declaringClass, type=$typeName}"
 
     companion object : IBGVReader<BGVFieldPool> {
@@ -356,6 +436,16 @@ class BGVNodeSignaturePool(
         writer.putShort(args.size.toShort())
         args.forEach { it.write(writer) }
         returnType.write(writer)
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("pool_type", "node_signature")
+        put("id", id.toInt())
+        putJsonArray("args") {
+            args.forEach { add(it.toJson()) }
+        }
+        put("return_type", returnType.toJson())
     }
 
     override fun toString() = "NodeSignaturePool {args=[${args.joinToString()}], return=$returnType}"
@@ -403,6 +493,26 @@ class BGVNodeSourcePositionPool(
         caller.write(writer)
     }
 
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("pool_type", "node_source_position")
+        put("id", id.toInt())
+        put("method", method.toJson())
+        put("bci", bci)
+        putJsonArray("source_positions") {
+            sourcePositions.forEach {
+                addJsonObject {
+                    put("uri", it.uri.toJson())
+                    put("location", it.location)
+                    put("line", it.line)
+                    put("start", it.start)
+                    put("end", it.end)
+                }
+            }
+        }
+        put("caller", caller.toJson())
+    }
+
     companion object : IBGVReader<BGVNodeSourcePositionPool> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVNodeSourcePositionPool {
             val method = IBGVPoolObject.read(reader, context)
@@ -435,6 +545,14 @@ class BGVNodePool(
         writer.putByte(BGVToken.POOL_NODE)
         writer.putInt(nodeId)
         nodeClass.write(writer)
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "pool")
+        put("pool_type", "node")
+        put("id", id.toInt())
+        put("node_id", nodeId)
+        put("node_class", nodeClass.toJson())
     }
 
     override fun toString() = "NodePool {id=$nodeId, class=$nodeClass}"

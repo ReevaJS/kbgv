@@ -1,6 +1,9 @@
 package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 data class BGVNode(
     val id: Int,
@@ -35,6 +38,20 @@ data class BGVNode(
             if (isIndirect != (edge is BGVIndirectEdge))
                 throw IllegalStateException()
             edge.write(writer)
+        }
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "node")
+        put("id", id)
+        put("node_class", nodeClass.toJson())
+        put("has_predecessor", hasPredecessor)
+        put("props", props.toJson())
+        putJsonArray("edges_in") {
+            edgesIn.forEach { add(it.toJson()) }
+        }
+        putJsonArray("edges_out") {
+            edgesOut.forEach { add(it.toJson()) }
         }
     }
 

@@ -2,6 +2,9 @@ package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.BGVToken
 import com.reevajs.kbgv.ExpandingByteBuffer
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 /**
  * BeginGroup {
@@ -18,7 +21,7 @@ data class BGVGroup(
     val method: IBGVPoolObject,
     val bci: Int,
     val props: BGVProps,
-    val groups: List<IBGVGroupDocumentGraph>,
+    val children: List<IBGVGroupDocumentGraph>,
 ) : IBGVGroupDocumentGraph {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.BEGIN_GROUP)
@@ -27,8 +30,20 @@ data class BGVGroup(
         method.write(writer)
         writer.putInt(bci)
         props.write(writer)
-        groups.forEach { it.write(writer) }
+        children.forEach { it.write(writer) }
         writer.putByte(BGVToken.CLOSE_GROUP)
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "group")
+        put("name", name.toJson())
+        put("short_name", shortName.toJson())
+        put("method", method.toJson())
+        put("bci", bci)
+        put("props", props.toJson())
+        putJsonArray("children") {
+            children.forEach { add(it.toJson()) }
+        }
     }
 
     companion object : IBGVReader<BGVGroup> {
@@ -39,12 +54,12 @@ data class BGVGroup(
             val bci = reader.getInt()
             val props = BGVProps.read(reader, context)
 
-            val groups = mutableListOf<IBGVGroupDocumentGraph>()
+            val children = mutableListOf<IBGVGroupDocumentGraph>()
             while (reader.peekByte() != BGVToken.CLOSE_GROUP)
-                groups.add(IBGVGroupDocumentGraph.read(reader, context))
+                children.add(IBGVGroupDocumentGraph.read(reader, context))
             reader.getByte()
 
-            return BGVGroup(name, shortName, method, bci, props, groups)
+            return BGVGroup(name, shortName, method, bci, props, children)
         }
     }
 }

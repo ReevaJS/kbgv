@@ -1,6 +1,9 @@
 package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 data class BGVGraphBody(
     val props: BGVProps,
@@ -13,6 +16,17 @@ data class BGVGraphBody(
         nodes.forEach { it.write(writer) }
         writer.putInt(blocks.size)
         blocks.forEach { it.write(writer) }
+    }
+
+    override fun toJson() = buildJsonObject {
+        put("\$type", "graph_body")
+        put("props", props.toJson())
+        putJsonArray("nodes") {
+            nodes.forEach { add(it.toJson()) }
+        }
+        putJsonArray("blocks") {
+            blocks.forEach { add(it.toJson()) }
+        }
     }
 
     companion object : IBGVReader<BGVGraphBody> {
