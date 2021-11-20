@@ -12,9 +12,9 @@ import kotlinx.serialization.json.put
  *     }
  */
 class BGVProp(val key: BGVStringPool, val value: IBGVPropObject) : IBGVObject {
-    override fun write(writer: ExpandingByteBuffer) {
-        key.write(writer)
-        value.write(writer)
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
+        key.write(writer, context)
+        value.write(writer, context)
     }
 
     override fun toJson() = buildJsonObject {

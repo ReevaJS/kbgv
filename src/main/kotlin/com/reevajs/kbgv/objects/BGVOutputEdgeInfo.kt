@@ -15,9 +15,9 @@ data class BGVOutputEdgeInfo(
     val indirect: Boolean,
     val name: BGVStringPool
 ) : IBGVObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(if (indirect) 1 else 0)
-        name.write(writer)
+        name.write(writer, context)
     }
 
     override fun toJson() = buildJsonObject {

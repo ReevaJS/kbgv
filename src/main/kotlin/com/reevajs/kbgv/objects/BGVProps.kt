@@ -1,7 +1,6 @@
 package com.reevajs.kbgv.objects
 
 import com.reevajs.kbgv.ExpandingByteBuffer
-import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -13,9 +12,9 @@ import kotlinx.serialization.json.putJsonArray
  *     }
  */
 data class BGVProps(val props: List<BGVProp>) : IBGVObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putShort(props.size.toShort())
-        props.forEach { it.write(writer) }
+        props.forEach { it.write(writer, context) }
     }
 
     override fun toJson() = buildJsonObject {

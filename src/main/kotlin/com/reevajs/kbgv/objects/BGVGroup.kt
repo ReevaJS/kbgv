@@ -25,14 +25,14 @@ data class BGVGroup(
     val props: BGVProps,
     val children: List<IBGVGroupDocumentGraph>,
 ) : IBGVGroupDocumentGraph {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.BEGIN_GROUP)
-        name.write(writer)
-        shortName.write(writer)
-        method.write(writer)
+        name.write(writer, context)
+        shortName.write(writer, context)
+        method.write(writer, context)
         writer.putInt(bci)
-        props.write(writer)
-        children.forEach { it.write(writer) }
+        props.write(writer, context)
+        children.forEach { it.write(writer, context) }
         writer.putByte(BGVToken.CLOSE_GROUP)
     }
 

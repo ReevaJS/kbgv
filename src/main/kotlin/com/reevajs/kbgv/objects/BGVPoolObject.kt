@@ -46,7 +46,7 @@ sealed interface IBGVPoolObject : IBGVObject {
  *     }
  */
 object BGVNullPool : IBGVPoolObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.POOL_NULL)
     }
 
@@ -75,20 +75,35 @@ object BGVNullPool : IBGVPoolObject {
  *         }
  *     }
  */
-sealed class BGVNewPool(id: UShort) : IBGVPoolObject {
+sealed class BGVNewPool(id: UShort, token: Byte) : IBGVPoolObject {
     var id: UShort = id
         internal set
+    var token: Byte = token
+        internal set
 
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
+        if (id in context) {
+            // Write a reference
+            writer.putByte(token)
+            writer.putShort(id.toShort())
+        } else {
+            context[id] = this
+            writeImpl(writer, context)
+        }
+    }
+
+    open fun writeImpl(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.POOL_NEW)
         writer.putShort(id.toShort())
+        writer.putByte(token)
     }
 
     companion object : IBGVReader<BGVNewPool> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVNewPool {
             val id = reader.getShort().toUShort()
+            val token = reader.getByte()
 
-            return when (reader.getByte()) {
+            return when (token) {
                 BGVToken.POOL_STRING -> BGVStringPool.read(reader, context)
                 BGVToken.POOL_ENUM -> BGVEnumPool.read(reader, context)
                 BGVToken.POOL_CLASS -> BGVClassPool.read(reader, context)
@@ -101,6 +116,7 @@ sealed class BGVNewPool(id: UShort) : IBGVPoolObject {
                 else -> unreachable()
             }.also {
                 it.id = id
+                it.token = token
                 context[id] = it
             }
         }
@@ -113,10 +129,9 @@ sealed class BGVNewPool(id: UShort) : IBGVPoolObject {
  *         String string
  *     }
  */
-class BGVStringPool(id: UShort, val string: String) : BGVNewPool(id) {
-    override fun write(writer: ExpandingByteBuffer) {
-        super.write(writer)
-        writer.putByte(BGVToken.POOL_STRING)
+class BGVStringPool(id: UShort, val string: String) : BGVNewPool(id, BGVToken.POOL_STRING) {
+    override fun writeImpl(writer: ExpandingByteBuffer, context: Context) {
+        super.writeImpl(writer, context)
         writer.putString(string)
     }
 
@@ -148,11 +163,10 @@ class BGVEnumPool(
     id: UShort,
     val enumClass: BGVClassPool,
     val ordinal: Int,
-) : BGVNewPool(id) {
-    override fun write(writer: ExpandingByteBuffer) {
-        super.write(writer)
-        writer.putByte(BGVToken.POOL_ENUM)
-        enumClass.write(writer)
+) : BGVNewPool(id, BGVToken.POOL_ENUM) {
+    override fun writeImpl(writer: ExpandingByteBuffer, context: Context) {
+        super.writeImpl(writer, context)
+        enumClass.write(writer, context)
         writer.putInt(ordinal)
     }
 
@@ -193,11 +207,11 @@ sealed interface IBGVClassPoolType : IBGVObject
  *     }
  */
 class BGVClassPoolEnumType(val values: List<BGVStringPool>) : IBGVClassPoolType {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.ENUM_KLASS)
         writer.putInt(values.size)
         values.forEach {
-            it.write(writer)
+            it.write(writer, context)
         }
     }
 
@@ -230,7 +244,7 @@ class BGVClassPoolEnumType(val values: List<BGVStringPool>) : IBGVClassPoolType 
  *     }
  */
 object BGVClassPoolKlassType : IBGVClassPoolType {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.KLASS)
     }
 
@@ -253,12 +267,11 @@ class BGVClassPool(
     id: UShort,
     val typeName: String,
     val type: IBGVClassPoolType,
-) : BGVNewPool(id) {
-    override fun write(writer: ExpandingByteBuffer) {
-        super.write(writer)
-        writer.putByte(BGVToken.POOL_CLASS)
+) : BGVNewPool(id, BGVToken.POOL_CLASS) {
+    override fun writeImpl(writer: ExpandingByteBuffer, context: Context) {
+        super.writeImpl(writer, context)
         writer.putString(typeName)
-        type.write(writer)
+        type.write(writer, context)
     }
 
     override fun toJson() = buildJsonObject {
@@ -302,13 +315,12 @@ class BGVMethodPool(
     val signature: BGVNodeSignaturePool,
     val modifiers: Int,
     val bytes: ByteArray,
-) : BGVNewPool(id) {
-    override fun write(writer: ExpandingByteBuffer) {
-        super.write(writer)
-        writer.putByte(BGVToken.POOL_METHOD)
-        declaringClass.write(writer)
-        methodName.write(writer)
-        signature.write(writer)
+) : BGVNewPool(id, BGVToken.POOL_METHOD) {
+    override fun writeImpl(writer: ExpandingByteBuffer, context: Context) {
+        super.writeImpl(writer, context)
+        declaringClass.write(writer, context)
+        methodName.write(writer, context)
+        signature.write(writer, context)
         writer.putInt(modifiers)
         writer.putBytes(bytes)
     }
@@ -367,16 +379,15 @@ class BGVNodeClassPool(
     val nameTemplate: String,
     val inputs: List<BGVInputEdgeInfo>,
     val outputs: List<BGVOutputEdgeInfo>,
-) : BGVNewPool(id) {
-    override fun write(writer: ExpandingByteBuffer) {
-        super.write(writer)
-        writer.putByte(BGVToken.POOL_NODE_CLASS)
-        nodeClass.write(writer)
+) : BGVNewPool(id, BGVToken.POOL_NODE_CLASS) {
+    override fun writeImpl(writer: ExpandingByteBuffer, context: Context) {
+        super.writeImpl(writer, context)
+        nodeClass.write(writer, context)
         writer.putString(nameTemplate)
         writer.putShort(inputs.size.toShort())
-        inputs.forEach { it.write(writer) }
+        inputs.forEach { it.write(writer, context) }
         writer.putShort(outputs.size.toShort())
-        outputs.forEach { it.write(writer) }
+        outputs.forEach { it.write(writer, context) }
     }
 
     override fun toJson() = buildJsonObject {
@@ -427,13 +438,12 @@ class BGVFieldPool(
     val name: BGVStringPool,
     val typeName: BGVStringPool,
     val modifiers: Int,
-) : BGVNewPool(id) {
-    override fun write(writer: ExpandingByteBuffer) {
-        super.write(writer)
-        writer.putByte(BGVToken.POOL_FIELD)
-        declaringClass.write(writer)
-        name.write(writer)
-        typeName.write(writer)
+) : BGVNewPool(id, BGVToken.POOL_FIELD) {
+    override fun writeImpl(writer: ExpandingByteBuffer, context: Context) {
+        super.writeImpl(writer, context)
+        declaringClass.write(writer, context)
+        name.write(writer, context)
+        typeName.write(writer, context)
         writer.putInt(modifiers)
     }
 
@@ -476,12 +486,12 @@ class BGVNodeSignaturePool(
     id: UShort,
     val args: List<BGVStringPool>,
     val returnType: BGVStringPool,
-) : BGVNewPool(id) {
-    override fun write(writer: ExpandingByteBuffer) {
-        super.write(writer)
+) : BGVNewPool(id, BGVToken.POOL_SIGNATURE) {
+    override fun writeImpl(writer: ExpandingByteBuffer, context: Context) {
+        super.writeImpl(writer, context)
         writer.putShort(args.size.toShort())
-        args.forEach { it.write(writer) }
-        returnType.write(writer)
+        args.forEach { it.write(writer, context) }
+        returnType.write(writer, context)
     }
 
     override fun toJson() = buildJsonObject {
@@ -546,21 +556,20 @@ class BGVNodeSourcePositionPool(
     val bci: Int, // bytecode index
     val sourcePositions: List<SourcePosition>,
     val caller: BGVNodeSourcePositionPool?,
-) : BGVNewPool(id) {
-    override fun write(writer: ExpandingByteBuffer) {
-        super.write(writer)
-        writer.putByte(BGVToken.POOL_NODE_SOURCE_POSITION)
-        method.write(writer)
+) : BGVNewPool(id, BGVToken.POOL_NODE_SOURCE_POSITION) {
+    override fun writeImpl(writer: ExpandingByteBuffer, context: Context) {
+        super.writeImpl(writer, context)
+        method.write(writer, context)
         writer.putInt(bci)
         sourcePositions.forEach {
-            it.uri.write(writer)
+            it.uri.write(writer, context)
             writer.putString(it.location)
             writer.putInt(it.line)
             writer.putInt(it.start)
             writer.putInt(it.end)
         }
-        BGVNullPool.write(writer)
-        caller.write(writer)
+        BGVNullPool.write(writer, context)
+        caller.write(writer, context)
     }
 
     override fun toJson(): JsonElement = buildJsonObject {
@@ -625,12 +634,11 @@ class BGVNodePool(
     id: UShort,
     val nodeId: Int,
     val nodeClass: BGVNodeClassPool,
-) : BGVNewPool(id) {
-    override fun write(writer: ExpandingByteBuffer) {
-        super.write(writer)
-        writer.putByte(BGVToken.POOL_NODE)
+) : BGVNewPool(id, BGVToken.POOL_NODE) {
+    override fun writeImpl(writer: ExpandingByteBuffer, context: Context) {
+        super.writeImpl(writer, context)
         writer.putInt(nodeId)
-        nodeClass.write(writer)
+        nodeClass.write(writer, context)
     }
 
     override fun toJson() = buildJsonObject {
@@ -656,7 +664,8 @@ class BGVNodePool(
 fun <T : IBGVPoolObject> T.toNullType(): T? = if (this == BGVNullPool) null else this
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-fun <T : IBGVPoolObject?> T.write(writer: ExpandingByteBuffer) = (this ?: BGVNullPool).write(writer)
+fun <T : IBGVPoolObject?> T.write(writer: ExpandingByteBuffer, context: Context) =
+    (this ?: BGVNullPool).write(writer, context)
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 fun <T : IBGVPoolObject?> T.toJson(): JsonElement = (this ?: BGVNullPool).toJson()

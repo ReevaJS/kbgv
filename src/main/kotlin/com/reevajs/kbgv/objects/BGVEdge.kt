@@ -16,7 +16,7 @@ interface IBGVEdge : IBGVObject
  *     }
  */
 class BGVDirectEdge(val node: Int) : IBGVEdge {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putInt(node)
     }
 
@@ -41,7 +41,7 @@ class BGVDirectEdge(val node: Int) : IBGVEdge {
  *     }
  */
 class BGVIndirectEdge(val nodes: List<Int>) : IBGVEdge {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putShort(nodes.size.toShort())
         nodes.forEach(writer::putInt)
     }

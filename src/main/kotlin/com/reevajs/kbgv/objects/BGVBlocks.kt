@@ -20,7 +20,7 @@ data class BGVBlocks(
     val nodes: List<Int>,
     val successors: List<Int>,
 ) : IBGVObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putInt(id)
         writer.putInt(nodes.size)
         nodes.forEach(writer::putInt)

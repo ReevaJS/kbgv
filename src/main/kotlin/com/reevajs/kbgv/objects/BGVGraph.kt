@@ -22,13 +22,13 @@ data class BGVGraph(
     val args: List<IBGVPropObject>,
     val body: BGVGraphBody,
 ) : IBGVGroupDocumentGraph {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.BEGIN_GRAPH)
         writer.putInt(id)
         writer.putString(format)
         writer.putInt(args.size)
-        args.forEach { it.write(writer) }
-        body.write(writer)
+        args.forEach { it.write(writer, context) }
+        body.write(writer, context)
     }
 
     override fun toJson() = buildJsonObject {

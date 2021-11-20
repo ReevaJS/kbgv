@@ -47,9 +47,9 @@ sealed interface IBGVPropObject : IBGVObject {
  *     }
  */
 data class BGVPoolProperty(val value: IBGVPoolObject?) : IBGVPropObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.PROPERTY_POOL)
-        value.write(writer)
+        value.write(writer, context)
     }
 
     override fun toJson() = buildJsonObject {
@@ -68,7 +68,7 @@ data class BGVPoolProperty(val value: IBGVPoolObject?) : IBGVPropObject {
  *     }
  */
 data class BGVIntProperty(val value: Int) : IBGVPropObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.PROPERTY_INT)
         writer.putInt(value)
     }
@@ -89,7 +89,7 @@ data class BGVIntProperty(val value: Int) : IBGVPropObject {
  *     }
  */
 data class BGVLongProperty(val value: Long) : IBGVPropObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.PROPERTY_LONG)
         writer.putLong(value)
     }
@@ -110,7 +110,7 @@ data class BGVLongProperty(val value: Long) : IBGVPropObject {
  *     }
  */
 data class BGVDoubleProperty(val value: Double) : IBGVPropObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.PROPERTY_DOUBLE)
         writer.putDouble(value)
     }
@@ -131,7 +131,7 @@ data class BGVDoubleProperty(val value: Double) : IBGVPropObject {
  *     }
  */
 data class BGVFloatProperty(val value: Float) : IBGVPropObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.PROPERTY_FLOAT)
         writer.putFloat(value)
     }
@@ -151,7 +151,7 @@ data class BGVFloatProperty(val value: Float) : IBGVPropObject {
  *     }
  */
 object BGVTrueProperty : IBGVPropObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.PROPERTY_TRUE)
     }
 
@@ -169,7 +169,7 @@ object BGVTrueProperty : IBGVPropObject {
  *     }
  */
 object BGVFalseProperty : IBGVPropObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.PROPERTY_FALSE)
     }
 
@@ -206,7 +206,7 @@ object BGVFalseProperty : IBGVPropObject {
 class BGVArrayProperty(
     val values: List<Any>, // List<Double | Int | IBGVPoolObject>
 ) : IBGVPropObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.PROPERTY_ARRAY)
         val type = when (values::class.java.componentType) {
             Double::class -> BGVToken.PROPERTY_DOUBLE
@@ -228,7 +228,7 @@ class BGVArrayProperty(
             }
             else -> values.forEach {
                 expectIs<IBGVPoolObject>(it)
-                it.write(writer)
+                it.write(writer, context)
             }
         }
     }
@@ -282,9 +282,9 @@ class BGVArrayProperty(
  *     }
  */
 class BGVSubgraphProperty(val graph: BGVGraphBody) : IBGVPropObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.PROPERTY_SUBGRAPH)
-        graph.write(writer)
+        graph.write(writer, context)
     }
 
     override fun toJson() = buildJsonObject {

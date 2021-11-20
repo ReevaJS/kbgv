@@ -19,12 +19,12 @@ data class BGVGraphBody(
     val nodes: List<BGVNode>,
     val blocks: List<BGVBlocks>,
 ) : IBGVObject {
-    override fun write(writer: ExpandingByteBuffer) {
-        props.write(writer)
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
+        props.write(writer, context)
         writer.putInt(nodes.size)
-        nodes.forEach { it.write(writer) }
+        nodes.forEach { it.write(writer, context) }
         writer.putInt(blocks.size)
-        blocks.forEach { it.write(writer) }
+        blocks.forEach { it.write(writer, context) }
     }
 
     override fun toJson() = buildJsonObject {

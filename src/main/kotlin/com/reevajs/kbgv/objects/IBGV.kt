@@ -19,11 +19,11 @@ class Context {
 }
 
 interface IBGVObject {
-    fun write(writer: ExpandingByteBuffer)
+    fun write(writer: ExpandingByteBuffer, context: Context)
 
     fun write(order: ByteOrder): ByteArray {
         val buf = ExpandingByteBuffer(order)
-        write(buf)
+        write(buf, Context())
         return buf.bytes()
     }
 

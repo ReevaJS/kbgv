@@ -32,20 +32,20 @@ data class BGVNode(
             throw IllegalArgumentException()
     }
 
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putInt(id)
-        nodeClass.write(writer)
+        nodeClass.write(writer, context)
         writer.putByte(if (hasPredecessor) 1 else 0)
-        props.write(writer)
+        props.write(writer, context)
 
         edgesIn.forEachIndexed { index, edge ->
             expect(nodeClass.inputs[index].indirect == (edge is BGVIndirectEdge))
-            edge.write(writer)
+            edge.write(writer, context)
         }
 
         edgesOut.forEachIndexed { index, edge ->
             expect(nodeClass.outputs[index].indirect == (edge is BGVIndirectEdge))
-            edge.write(writer)
+            edge.write(writer, context)
         }
     }
 

@@ -12,9 +12,9 @@ import kotlinx.serialization.json.put
  *     }
  */
 data class BGVDocument(val props: BGVProps) : IBGVGroupDocumentGraph {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putByte(BGVToken.BEGIN_DOCUMENT)
-        props.write(writer)
+        props.write(writer, context)
     }
 
     override fun toJson() = buildJsonObject {

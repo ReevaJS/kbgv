@@ -19,11 +19,11 @@ data class BGVObject(
     val minor: Byte,
     val children: List<IBGVGroupDocumentGraph>,
 ) : IBGVObject {
-    override fun write(writer: ExpandingByteBuffer) {
+    override fun write(writer: ExpandingByteBuffer, context: Context) {
         writer.putBytes(magic)
         writer.putByte(major)
         writer.putByte(minor)
-        children.forEach { it.write(writer) }
+        children.forEach { it.write(writer, context) }
     }
 
     override fun toJson() = buildJsonObject {
