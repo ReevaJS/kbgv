@@ -102,7 +102,7 @@ class ExpandingByteBuffer {
 
     fun bytes(): ByteArray = let {
         expect(buf.hasArray())
-        buf.array()
+        buf.array().copyOfRange(0, buf.position())
     }
 
     private fun ensureCapacity(capacity: Int) {
