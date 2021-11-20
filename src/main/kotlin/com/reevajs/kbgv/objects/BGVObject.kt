@@ -26,12 +26,12 @@ data class BGVObject(
         children.forEach { it.write(writer, context) }
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "BGV")
         put("major", major)
         put("minor", minor)
         putJsonArray("children") {
-            children.forEach { add(it.toJson()) }
+            children.forEach { add(it.toJson(context)) }
         }
     }
 

@@ -17,9 +17,9 @@ data class BGVDocument(val props: BGVProps) : IBGVGroupDocumentGraph {
         props.write(writer, context)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "document")
-        put("props", props.toJson())
+        put("props", props.toJson(context))
     }
 
     override fun toString() = "Document {$props}"

@@ -36,15 +36,15 @@ data class BGVGroup(
         writer.putByte(BGVToken.CLOSE_GROUP)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "group")
-        put("name", name.toJson())
-        put("short_name", shortName.toJson())
-        put("method", method.toJson())
+        put("name", name.toJson(context))
+        put("short_name", shortName.toJson(context))
+        put("method", method.toJson(context))
         put("bci", bci)
-        put("props", props.toJson())
+        put("props", props.toJson(context))
         putJsonArray("children") {
-            children.forEach { add(it.toJson()) }
+            children.forEach { add(it.toJson(context)) }
         }
     }
 

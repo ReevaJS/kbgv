@@ -17,10 +17,10 @@ data class BGVProps(val props: List<BGVProp>) : IBGVObject {
         props.forEach { it.write(writer, context) }
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "props")
         putJsonArray("values") {
-            props.forEach { add(it.toJson()) }
+            props.forEach { add(it.toJson(context)) }
         }
     }
 

@@ -17,10 +17,10 @@ class BGVProp(val key: BGVStringPool, val value: IBGVPropObject) : IBGVObject {
         value.write(writer, context)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "prop")
-        put("key", key.toJson())
-        put("value", value.toJson())
+        put("key", key.toJson(context))
+        put("value", value.toJson(context))
     }
 
     override fun toString() = "Prop {key=$key, value=$value}"

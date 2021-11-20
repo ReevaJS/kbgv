@@ -27,14 +27,14 @@ data class BGVGraphBody(
         blocks.forEach { it.write(writer, context) }
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "graph_body")
-        put("props", props.toJson())
+        put("props", props.toJson(context))
         putJsonArray("nodes") {
-            nodes.forEach { add(it.toJson()) }
+            nodes.forEach { add(it.toJson(context)) }
         }
         putJsonArray("blocks") {
-            blocks.forEach { add(it.toJson()) }
+            blocks.forEach { add(it.toJson(context)) }
         }
     }
 

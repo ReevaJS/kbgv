@@ -28,7 +28,7 @@ data class BGVBlocks(
         successors.forEach(writer::putInt)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "blocks")
         put("id", id)
         putJsonArray("nodes") {

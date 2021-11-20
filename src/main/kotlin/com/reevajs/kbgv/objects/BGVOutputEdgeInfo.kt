@@ -20,10 +20,10 @@ data class BGVOutputEdgeInfo(
         name.write(writer, context)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "output_edge_info")
         put("indirect", indirect)
-        put("name", name.toJson())
+        put("name", name.toJson(context))
     }
 
     override fun toString(): String {

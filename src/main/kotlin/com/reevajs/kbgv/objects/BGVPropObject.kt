@@ -52,10 +52,10 @@ data class BGVPoolProperty(val value: IBGVPoolObject?) : IBGVPropObject {
         value.write(writer, context)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "prop_object")
         put("prop_type", "pool")
-        put("value", value.toJson())
+        put("value", value.toJson(context))
     }
 
     override fun toString() = "$value"
@@ -73,7 +73,7 @@ data class BGVIntProperty(val value: Int) : IBGVPropObject {
         writer.putInt(value)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "prop_object")
         put("prop_type", "pool")
         put("value", value)
@@ -94,7 +94,7 @@ data class BGVLongProperty(val value: Long) : IBGVPropObject {
         writer.putLong(value)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "prop_object")
         put("prop_type", "long")
         put("value", value)
@@ -115,7 +115,7 @@ data class BGVDoubleProperty(val value: Double) : IBGVPropObject {
         writer.putDouble(value)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "prop_object")
         put("prop_type", "double")
         put("value", value)
@@ -136,7 +136,7 @@ data class BGVFloatProperty(val value: Float) : IBGVPropObject {
         writer.putFloat(value)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "prop_object")
         put("prop_type", "float")
         put("value", value)
@@ -155,7 +155,7 @@ object BGVTrueProperty : IBGVPropObject {
         writer.putByte(BGVToken.PROPERTY_TRUE)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "prop_object")
         put("prop_type", "true")
     }
@@ -173,7 +173,7 @@ object BGVFalseProperty : IBGVPropObject {
         writer.putByte(BGVToken.PROPERTY_FALSE)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "prop_object")
         put("prop_type", "false")
     }
@@ -233,7 +233,7 @@ class BGVArrayProperty(
         }
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "prop_object")
         val type = when (values::class.java.componentType) {
             Double::class -> "double"
@@ -247,7 +247,7 @@ class BGVArrayProperty(
                 when (type) {
                     "double" -> add(it as Double)
                     "int" -> add(it as Int)
-                    "pool" -> add((it as IBGVPoolObject).toJson())
+                    "pool" -> add((it as IBGVPoolObject).toJson(context))
                     else -> unreachable()
                 }
             }
@@ -287,9 +287,9 @@ class BGVSubgraphProperty(val graph: BGVGraphBody) : IBGVPropObject {
         graph.write(writer, context)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "prop_object")
         put("prop_type", "subgraph")
-        put("graph", graph.toJson())
+        put("graph", graph.toJson(context))
     }
 }

@@ -23,11 +23,11 @@ data class BGVInputEdgeInfo(
         type.write(writer, context)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "input_edge_info")
         put("indirect", indirect)
-        put("name", name.toJson())
-        put("type", type.toJson())
+        put("name", name.toJson(context))
+        put("type", type.toJson(context))
     }
 
     override fun toString(): String {

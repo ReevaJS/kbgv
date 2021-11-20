@@ -31,14 +31,14 @@ data class BGVGraph(
         body.write(writer, context)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "graph")
         put("id", id)
         put("format", format)
         putJsonArray("args") {
-            args.forEach { add(it.toJson()) }
+            args.forEach { add(it.toJson(context)) }
         }
-        put("body", body.toJson())
+        put("body", body.toJson(context))
     }
 
     companion object : IBGVReader<BGVGraph> {

@@ -20,7 +20,7 @@ class BGVDirectEdge(val node: Int) : IBGVEdge {
         writer.putInt(node)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "direct_edge")
         put("node", node)
     }
@@ -46,7 +46,7 @@ class BGVIndirectEdge(val nodes: List<Int>) : IBGVEdge {
         nodes.forEach(writer::putInt)
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "indirect_edge")
         putJsonArray("nodes") {
             nodes.forEach(::add)

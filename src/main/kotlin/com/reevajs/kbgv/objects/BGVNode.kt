@@ -49,17 +49,17 @@ data class BGVNode(
         }
     }
 
-    override fun toJson() = buildJsonObject {
+    override fun toJson(context: Context) = buildJsonObject {
         put("\$type", "node")
         put("id", id)
-        put("node_class", nodeClass.toJson())
+        put("node_class", nodeClass.toJson(context))
         put("has_predecessor", hasPredecessor)
-        put("props", props.toJson())
+        put("props", props.toJson(context))
         putJsonArray("edges_in") {
-            edgesIn.forEach { add(it.toJson()) }
+            edgesIn.forEach { add(it.toJson(context)) }
         }
         putJsonArray("edges_out") {
-            edgesOut.forEach { add(it.toJson()) }
+            edgesOut.forEach { add(it.toJson(context)) }
         }
     }
 

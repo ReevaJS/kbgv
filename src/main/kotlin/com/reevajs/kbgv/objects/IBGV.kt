@@ -27,9 +27,9 @@ interface IBGVObject {
         return buf.bytes()
     }
 
-    fun toJson(): JsonElement
+    fun toJson(context: Context = Context()): JsonElement
 
-    fun toJsonString(): String = toJson().toString()
+    fun toJsonString(): String = toJson(Context()).toString()
 }
 
 interface IBGVReader<T> {
