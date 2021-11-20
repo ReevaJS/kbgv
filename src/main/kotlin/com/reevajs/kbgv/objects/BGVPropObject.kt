@@ -28,7 +28,7 @@ data class BGVPoolProperty(val obj: IBGVPoolObject) : IBGVPropObject {
         obj.write(writer)
     }
 
-    override fun toString() = "PoolProperty ($obj)"
+    override fun toString() = "$obj"
 }
 
 data class BGVIntProperty(val value: Int) : IBGVPropObject {
@@ -37,7 +37,7 @@ data class BGVIntProperty(val value: Int) : IBGVPropObject {
         writer.putInt(value)
     }
 
-    override fun toString() = "IntProperty ($value)"
+    override fun toString() = "$value"
 }
 
 data class BGVLongProperty(val value: Long) : IBGVPropObject {
@@ -46,7 +46,7 @@ data class BGVLongProperty(val value: Long) : IBGVPropObject {
         writer.putLong(value)
     }
 
-    override fun toString() = "LongProperty ($value)"
+    override fun toString() = "${value}L"
 }
 
 data class BGVDoubleProperty(val value: Double) : IBGVPropObject {
@@ -55,7 +55,7 @@ data class BGVDoubleProperty(val value: Double) : IBGVPropObject {
         writer.putDouble(value)
     }
 
-    override fun toString() = "DoubleProperty ($value)"
+    override fun toString() = "$value"
 }
 
 data class BGVFloatProperty(val value: Float) : IBGVPropObject {
@@ -64,7 +64,7 @@ data class BGVFloatProperty(val value: Float) : IBGVPropObject {
         writer.putFloat(value)
     }
 
-    override fun toString() = "FloatProperty ($value)"
+    override fun toString() = "${value}F"
 }
 
 object BGVTrueProperty : IBGVPropObject {
@@ -72,7 +72,7 @@ object BGVTrueProperty : IBGVPropObject {
         writer.putByte(BGVToken.PROPERTY_TRUE)
     }
 
-    override fun toString() = "TrueProperty"
+    override fun toString() = "true"
 }
 
 object BGVFalseProperty : IBGVPropObject {
@@ -80,7 +80,7 @@ object BGVFalseProperty : IBGVPropObject {
         writer.putByte(BGVToken.PROPERTY_FALSE)
     }
 
-    override fun toString() = "FalseProperty"
+    override fun toString() = "false"
 }
 
 class BGVArrayProperty(
@@ -115,6 +115,8 @@ class BGVArrayProperty(
             }
         }
     }
+
+    override fun toString() = "[${values.joinToString()}]"
 
     companion object : IBGVReader<BGVArrayProperty> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVArrayProperty {

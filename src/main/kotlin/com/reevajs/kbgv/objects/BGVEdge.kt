@@ -9,6 +9,8 @@ class BGVDirectEdge(val node: Int) : IBGVEdge {
         writer.putInt(node)
     }
 
+    override fun toString() = "DirectEdge {$node}"
+
     companion object : IBGVReader<BGVDirectEdge> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVDirectEdge {
             return BGVDirectEdge(reader.getInt())
@@ -21,6 +23,8 @@ class BGVIndirectEdge(val nodes: List<Int>) : IBGVEdge {
         writer.putShort(nodes.size.toShort())
         nodes.forEach(writer::putInt)
     }
+
+    override fun toString() = "IndirectEdge {[${nodes.joinToString()}]}"
 
     companion object : IBGVReader<BGVIndirectEdge> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVIndirectEdge {

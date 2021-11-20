@@ -9,9 +9,7 @@ data class BGVDocument(val props: BGVProps) : IBGVGroupDocumentGraph {
         props.write(writer)
     }
 
-    override fun toString(): String {
-        return "Document ($props)"
-    }
+    override fun toString() = "Document {$props}"
 
     companion object : IBGVReader<BGVDocument> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVDocument {

@@ -150,7 +150,7 @@ class BGVStringPool(id: UShort, val string: String) : BGVNonnullPool(id) {
         writer.putString(string)
     }
 
-    override fun toString() = "StringPool #$id ($string)"
+    override fun toString() = "StringPool {$string}"
 
     companion object : IBGVReader<BGVStringPool> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVStringPool {
@@ -171,6 +171,8 @@ class BGVEnumPool(
         writer.putInt(ordinal)
     }
 
+    override fun toString() = "EnumPool {class=$enumClass, ordinal=$ordinal}"
+
     companion object : IBGVReader<BGVEnumPool> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVEnumPool {
             return BGVEnumPool(0U, IBGVPoolObject.read(reader, context), reader.getInt())
@@ -189,6 +191,8 @@ class BGVClassPoolEnumType(val values: List<IBGVPoolObject>) : IBGVClassPoolType
         }
     }
 
+    override fun toString() = "ENUM_KLASS"
+
     companion object : IBGVReader<BGVClassPoolEnumType> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVClassPoolEnumType {
             val length = reader.getInt()
@@ -201,6 +205,8 @@ object BGVClassPoolKlassType : IBGVClassPoolType {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.KLASS)
     }
+
+    override fun toString() = "KLASS"
 }
 
 class BGVClassPool(
@@ -214,6 +220,8 @@ class BGVClassPool(
         writer.putString(typeName)
         type.write(writer)
     }
+
+    override fun toString() = "ClassPool {name=$typeName, type=$type}"
 
     companion object : IBGVReader<BGVClassPool> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVClassPool {
@@ -245,6 +253,8 @@ class BGVMethodPool(
         writer.putInt(modifiers)
         writer.putBytes(bytes)
     }
+
+    override fun toString() = "MethodPool {name=$methodName, sig=$signature, class=$declaringClass}"
 
     companion object : IBGVReader<BGVMethodPool> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVMethodPool {
@@ -278,6 +288,8 @@ class BGVNodeClassPool(
         outputs.forEach { it.write(writer) }
     }
 
+    override fun toString() = "NodeClassPool {class=$nodeClass, template=$nameTemplate}"
+
     companion object : IBGVReader<BGVNodeClassPool> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVNodeClassPool {
             val nodeClass = IBGVPoolObject.read(reader, context)
@@ -303,11 +315,13 @@ class BGVFieldPool(
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
         writer.putByte(BGVToken.POOL_FIELD)
-        fieldClass.write(writer)
+        declaringClass.write(writer)
         name.write(writer)
         typeName.write(writer)
         writer.putInt(modifiers)
     }
+
+    override fun toString() = "FieldPool {name=$name, class=$declaringClass, type=$typeName}"
 
     companion object : IBGVReader<BGVFieldPool> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVFieldPool {
@@ -404,6 +418,8 @@ class BGVNodePool(
         writer.putInt(nodeId)
         nodeClass.write(writer)
     }
+
+    override fun toString() = "NodePool {id=$nodeId, class=$nodeClass}"
 
     companion object : IBGVReader<BGVNodePool> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVNodePool {
