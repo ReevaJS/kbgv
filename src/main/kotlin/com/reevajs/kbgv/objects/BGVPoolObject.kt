@@ -349,17 +349,25 @@ class BGVFieldPool(
 class BGVNodeSignaturePool(
     id: UShort,
     val args: List<IBGVPoolObject>,
+    val returnType: IBGVPoolObject,
 ) : BGVNonnullPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
         writer.putShort(args.size.toShort())
         args.forEach { it.write(writer) }
+        returnType.write(writer)
     }
+
+    override fun toString() = "NodeSignaturePool {args=[${args.joinToString()}], return=$returnType}"
 
     companion object : IBGVReader<BGVNodeSignaturePool> {
         override fun read(reader: ExpandingByteBuffer, context: Context): BGVNodeSignaturePool {
             val length = reader.getShort()
-            return BGVNodeSignaturePool(0U, (0 until length).map { IBGVPoolObject.read(reader, context) })
+            return BGVNodeSignaturePool(
+                0U,
+                (0 until length).map { IBGVPoolObject.read(reader, context) },
+                IBGVPoolObject.read(reader, context)
+            )
         }
     }
 }
