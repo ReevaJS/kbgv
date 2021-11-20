@@ -6,6 +6,15 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
+/**
+ *     Blocks {
+ *         sint32 id
+ *         sint32 nodes_count
+ *         sint32[nodes_count] nodes
+ *         sint32 followers_count
+ *         sint32[followers_count] followers
+ *     }
+ */
 data class BGVBlocks(
     val id: Int,
     val nodes: List<Int>,

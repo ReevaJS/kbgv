@@ -6,6 +6,12 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
+/**
+ *     Props {
+ *         sint16 props_count
+ *         Prop[props_count] props
+ *     }
+ */
 data class BGVProps(val props: List<BGVProp>) : IBGVObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putShort(props.size.toShort())

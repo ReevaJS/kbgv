@@ -6,6 +6,21 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
+/**
+ *     PropObject {
+ *         union {
+ *             PoolPropObject
+ *             IntPropObject
+ *             LongPropObject
+ *             DoublePropObject
+ *             FloatPropObject
+ *             TruePropObject
+ *             FalsePropObject
+ *             ArrayPropObject
+ *             SubgraphPropObject
+ *         }
+ *     }
+ */
 sealed interface IBGVPropObject : IBGVObject {
     companion object : IBGVReader<IBGVPropObject> {
         override fun read(reader: ExpandingByteBuffer, context: Context): IBGVPropObject {
@@ -25,6 +40,12 @@ sealed interface IBGVPropObject : IBGVObject {
     }
 }
 
+/**
+ *     PoolPropObject {
+ *         sint8 type = PROPERTY_POOL
+ *         PoolObject object
+ *     }
+ */
 data class BGVPoolProperty(val value: IBGVPoolObject?) : IBGVPropObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.PROPERTY_POOL)
@@ -40,6 +61,12 @@ data class BGVPoolProperty(val value: IBGVPoolObject?) : IBGVPropObject {
     override fun toString() = "$value"
 }
 
+/**
+ *     IntPropObject {
+ *         sint8 type = PROPERTY_INT
+ *         sint32 value
+ *     }
+ */
 data class BGVIntProperty(val value: Int) : IBGVPropObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.PROPERTY_INT)
@@ -55,6 +82,12 @@ data class BGVIntProperty(val value: Int) : IBGVPropObject {
     override fun toString() = "$value"
 }
 
+/**
+ *     LongPropObject {
+ *         sint8 type = PROPERTY_LONG
+ *         sint64 value
+ *     }
+ */
 data class BGVLongProperty(val value: Long) : IBGVPropObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.PROPERTY_LONG)
@@ -70,6 +103,12 @@ data class BGVLongProperty(val value: Long) : IBGVPropObject {
     override fun toString() = "${value}L"
 }
 
+/**
+ *     DoublePropObject {
+ *         sint8 type = PROPERTY_DOUBLE
+ *         float64 value
+ *     }
+ */
 data class BGVDoubleProperty(val value: Double) : IBGVPropObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.PROPERTY_DOUBLE)
@@ -85,6 +124,12 @@ data class BGVDoubleProperty(val value: Double) : IBGVPropObject {
     override fun toString() = "$value"
 }
 
+/**
+ *     FloatPropObject {
+ *         sint8 type = PROPERTY_FLOAT
+ *         float32 value
+ *     }
+ */
 data class BGVFloatProperty(val value: Float) : IBGVPropObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.PROPERTY_FLOAT)
@@ -100,6 +145,11 @@ data class BGVFloatProperty(val value: Float) : IBGVPropObject {
     override fun toString() = "${value}F"
 }
 
+/**
+ *     TruePropObject {
+ *         sint8 type = PROPERTY_TRUE
+ *     }
+ */
 object BGVTrueProperty : IBGVPropObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.PROPERTY_TRUE)
@@ -113,6 +163,11 @@ object BGVTrueProperty : IBGVPropObject {
     override fun toString() = "true"
 }
 
+/**
+ *     FalsePropObject {
+ *         sint8 type = PROPERTY_FALSE
+ *     }
+ */
 object BGVFalseProperty : IBGVPropObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.PROPERTY_FALSE)
@@ -126,6 +181,28 @@ object BGVFalseProperty : IBGVPropObject {
     override fun toString() = "false"
 }
 
+/**
+ *     ArrayPropObject {
+ *         sint8 type = PROPERTY_ARRAY
+ *         union {
+ *             struct {
+ *                 sint8 array_type = PROPERTY_DOUBLE
+ *                 sint32 times
+ *                 float64[times] values
+ *             }
+ *             struct {
+ *                 sint8 array_type = PROPERTY_INT
+ *                 sint32 times
+ *                 sint32[times] values
+ *             }
+ *             struct {
+ *                 sint8 array_type = PROPERTY_POOL
+ *                 sint32 times
+ *                 PoolObject[times] values
+ *             }
+ *         }
+ *     }
+ */
 class BGVArrayProperty(
     val values: List<Any>, // List<Double | Int | IBGVPoolObject>
 ) : IBGVPropObject {
@@ -198,6 +275,12 @@ class BGVArrayProperty(
     }
 }
 
+/**
+ *     SubgraphPropObject {
+ *         sint8 type = PROPERTY_SUBGRAPH
+ *         GraphBody graph
+ *     }
+ */
 class BGVSubgraphProperty(val graph: BGVGraphBody) : IBGVPropObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.PROPERTY_SUBGRAPH)

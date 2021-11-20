@@ -5,6 +5,12 @@ import com.reevajs.kbgv.ExpandingByteBuffer
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
+/**
+ *     Document {
+ *         sint8 token = BEGIN_DOCUMENT
+ *         Props props
+ *     }
+ */
 data class BGVDocument(val props: BGVProps) : IBGVGroupDocumentGraph {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.BEGIN_DOCUMENT)

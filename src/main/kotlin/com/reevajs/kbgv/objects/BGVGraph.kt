@@ -6,6 +6,16 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
+/**
+ *     Graph {
+ *         sint8 token = BEGIN_GRAPH
+ *         sint32 id
+ *         String format
+ *         sint32 args_count
+ *         PropObject[args_count] args
+ *         GraphBody body
+ *     }
+ */
 data class BGVGraph(
     val id: Int,
     val format: String,

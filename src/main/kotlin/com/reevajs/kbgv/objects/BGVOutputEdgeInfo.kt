@@ -5,6 +5,12 @@ import com.reevajs.kbgv.expectIs
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
+/**
+ *     OutputEdgeInfo {
+ *         sint8 indirect
+ *         PoolObject name
+ *     }
+ */
 data class BGVOutputEdgeInfo(
     val indirect: Boolean,
     val name: BGVStringPool

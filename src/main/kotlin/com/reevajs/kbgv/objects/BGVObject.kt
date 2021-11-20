@@ -7,12 +7,12 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
 /**
- * BGV {
- *   char[4] = 'BIGV'
- *   sint8 major
- *   sint8 minor
- *   GroupDocumentGraph
- * }
+ *     BGV {
+ *         char[4] = 'BIGV'
+ *         sint8 major
+ *         sint8 minor
+ *         GroupDocumentGraph*
+ *     }
  */
 data class BGVObject(
     val major: Byte,

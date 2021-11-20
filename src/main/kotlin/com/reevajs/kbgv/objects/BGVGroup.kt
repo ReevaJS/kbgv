@@ -8,13 +8,14 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
 /**
- * BeginGroup {
- *   sint8 token = BEGIN_GROUP
- *   PoolObject name
- *   PoolObject method
- *   sint32 bci
- *   Props props
- * }
+ *     BeginGroup {
+ *         sint8 token = BEGIN_GROUP
+ *         PoolObject name
+ *         PoolObject short_name
+ *         PoolObject method
+ *         sint32 bci
+ *         Props props
+ *     }
  */
 data class BGVGroup(
     val name: BGVStringPool,

@@ -5,6 +5,15 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
+/**
+ *     GraphBody {
+ *         Props props
+ *         sint32 nodes_count
+ *         Node[nodes_count] nodes
+ *         sint32 blocks_count
+ *         Blocks[blocks_count] blocks
+ *     }
+ */
 data class BGVGraphBody(
     val props: BGVProps,
     val nodes: List<BGVNode>,

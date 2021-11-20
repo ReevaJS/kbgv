@@ -3,8 +3,18 @@ package com.reevajs.kbgv.objects
 import com.reevajs.kbgv.ExpandingByteBuffer
 import kotlinx.serialization.json.*
 
+/**
+ *     Edge {
+ *       DirectEdge | IndirectEdge
+ *     }
+ */
 interface IBGVEdge : IBGVObject
 
+/**
+ *     DirectEdge {
+ *         sint32 node
+ *     }
+ */
 class BGVDirectEdge(val node: Int) : IBGVEdge {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putInt(node)
@@ -24,6 +34,12 @@ class BGVDirectEdge(val node: Int) : IBGVEdge {
     }
 }
 
+/**
+ *     IndirectEdge {
+ *       sint16 node_count
+ *       sint32[node_count] nodes
+ *     }
+ */
 class BGVIndirectEdge(val nodes: List<Int>) : IBGVEdge {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putShort(nodes.size.toShort())

@@ -5,6 +5,12 @@ import com.reevajs.kbgv.expectIs
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
+/**
+ *     Prop {
+ *         PoolObject key
+ *         PropObject value
+ *     }
+ */
 class BGVProp(val key: BGVStringPool, val value: IBGVPropObject) : IBGVObject {
     override fun write(writer: ExpandingByteBuffer) {
         key.write(writer)

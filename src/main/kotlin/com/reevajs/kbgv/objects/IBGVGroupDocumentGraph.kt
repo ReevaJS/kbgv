@@ -5,9 +5,9 @@ import com.reevajs.kbgv.ExpandingByteBuffer
 import com.reevajs.kbgv.unreachable
 
 /**
- * GroupDocumentGraph {
- *   BeginGroup GroupDocumentGraph CloseGroup | Document | Graph
- * }
+ *     GroupDocumentGraph {
+ *         BeginGroup GroupDocumentGraph* CloseGroup | Document | Graph
+ *     }
  */
 sealed interface IBGVGroupDocumentGraph : IBGVObject {
     companion object : IBGVReader<IBGVGroupDocumentGraph> {

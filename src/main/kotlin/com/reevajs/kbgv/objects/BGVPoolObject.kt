@@ -5,86 +5,13 @@ import kotlinx.serialization.json.*
 import java.util.*
 
 /**
- * PoolObject {
- *   union {
- *     POOL_NULL
- *     struct {
- *       sint8 token = POOL_NEW
- *       uint16 id
- *       union {
- *         struct {
- *           sint8 type = POOL_STRING
- *           String string
+ *     PoolObject {
+ *         union {
+ *             NullPoolObject
+ *             NewPoolObject
+ *             ReferencePoolObject
  *         }
- *         struct {
- *           sint8 type = POOL_ENUM
- *           PoolObject enum_class
- *           sint32 enum_ordinal
- *         }
- *         struct {
- *           sint8 type = POOL_CLASS
- *           String type_name
- *           union {
- *             struct {
- *               sint8 type = ENUM_KLASS
- *               sint32 values_count
- *               PoolObject values[values_count]
- *             }
- *             struct {
- *               sint8 type = KLASS
- *             }
- *           }
- *         }
- *         struct {
- *           sint8 type = POOL_METHOD
- *           PoolObject declaring_class
- *           PoolObject method_name
- *           PoolObject signature
- *           sint32 modifiers
- *           sint32 bytes_length
- *           uint8[bytes_length] bytes
- *         }
- *         struct {
- *           sint8 type = POOL_NODE_CLASS
- *           PoolObject node_class
- *           String name_template
- *           sint16 input_count
- *           InputEdgeInfo inputs[input_count]
- *           sint16 output_count
- *           OutputEdgeInfo outputs[output_count]
- *         }
- *         struct {
- *           sint8 type = POOL_FIELD
- *           PoolObject field_class
- *           PoolObject name
- *           PoolObject type_name
- *           sint32 modifiers
- *         }
- *         struct {
- *           sint8 type = POOL_NODE_SIGNATURE
- *           sint16 args_count
- *           PoolObject args[args_count]
- *         }
- *         struct {
- *           sint8 type = POOL_NODE_SOURCE_POSITION
- *           PoolObject method
- *           sint32 bci
- *           SourcePosition source_positions[...until SourcePosition.uri = null]
- *           PoolObject caller
- *         }
- *         struct {
- *           sint8 type = POOL_NODE
- *           sint32 node_id
- *           PoolObject node_class
- *         }
- *       }
  *     }
- *     struct {
- *       sint8 token = POOL_STRING | POOL_ENUM | POOL_CLASS | POOL_METHOD | POOL_NODE_CLASS | POOL_FIELD | POOL_SIGNATURE | POOL_NODE_SOURCE_POSITION | POOL_NODE
- *       uint16 pool_id
- *     }
- *   }
- * }
  */
 sealed interface IBGVPoolObject : IBGVObject {
     companion object : IBGVReader<IBGVPoolObject> {
@@ -103,7 +30,7 @@ sealed interface IBGVPoolObject : IBGVObject {
         override fun read(reader: ExpandingByteBuffer, context: Context): IBGVPoolObject {
             return when (val type = reader.getByte()) {
                 BGVToken.POOL_NULL -> BGVNullPool
-                BGVToken.POOL_NEW -> BGVNonnullPool.read(reader, context)
+                BGVToken.POOL_NEW -> BGVNewPool.read(reader, context)
                 else -> {
                     expect(type in ALLOWED_REF_TYPES)
                     context[reader.getShort().toUShort()]
@@ -113,6 +40,11 @@ sealed interface IBGVPoolObject : IBGVObject {
     }
 }
 
+/**
+ *     NullPoolObject {
+ *         sint8 token = POOL_NEW
+ *     }
+ */
 object BGVNullPool : IBGVPoolObject {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.POOL_NULL)
@@ -126,7 +58,24 @@ object BGVNullPool : IBGVPoolObject {
     override fun toString() = "NullPool"
 }
 
-sealed class BGVNonnullPool(id: UShort) : IBGVPoolObject {
+/**
+ *     NewPoolObject {
+ *         sint8 token = POOL_NEW
+ *         uint16 id
+ *         union {
+ *             StringPoolObject
+ *             EnumPoolObject
+ *             ClassPoolObject
+ *             MethodPoolObject
+ *             NodeClassPoolObject
+ *             FieldPoolObject
+ *             NodeSignaturePoolObject
+ *             NodeSourcePositionPoolObject
+ *             NodePoolObject
+ *         }
+ *     }
+ */
+sealed class BGVNewPool(id: UShort) : IBGVPoolObject {
     var id: UShort = id
         internal set
 
@@ -135,8 +84,8 @@ sealed class BGVNonnullPool(id: UShort) : IBGVPoolObject {
         writer.putShort(id.toShort())
     }
 
-    companion object : IBGVReader<BGVNonnullPool> {
-        override fun read(reader: ExpandingByteBuffer, context: Context): BGVNonnullPool {
+    companion object : IBGVReader<BGVNewPool> {
+        override fun read(reader: ExpandingByteBuffer, context: Context): BGVNewPool {
             val id = reader.getShort().toUShort()
 
             return when (reader.getByte()) {
@@ -158,7 +107,13 @@ sealed class BGVNonnullPool(id: UShort) : IBGVPoolObject {
     }
 }
 
-class BGVStringPool(id: UShort, val string: String) : BGVNonnullPool(id) {
+/**
+ *     StringPoolObject {
+ *         sint8 type = POOL_STRING
+ *         String string
+ *     }
+ */
+class BGVStringPool(id: UShort, val string: String) : BGVNewPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
         writer.putByte(BGVToken.POOL_STRING)
@@ -181,11 +136,19 @@ class BGVStringPool(id: UShort, val string: String) : BGVNonnullPool(id) {
     }
 }
 
+
+/**
+ *     EnumPoolObject {
+ *         sint8 type = POOL_ENUM
+ *         PoolObject enum_class
+ *         sint32 enum_ordinal
+ *     }
+ */
 class BGVEnumPool(
     id: UShort,
     val enumClass: BGVClassPool,
     val ordinal: Int,
-) : BGVNonnullPool(id) {
+) : BGVNewPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
         writer.putByte(BGVToken.POOL_ENUM)
@@ -212,8 +175,23 @@ class BGVEnumPool(
     }
 }
 
+/**
+ *     ClassPoolType {
+ *         union {
+ *             KlassType
+ *             EnumKlassType
+ *         }
+ *     }
+ */
 sealed interface IBGVClassPoolType : IBGVObject
 
+/**
+ *     EnumKlassType {
+ *         sint8 type = ENUM_KLASS
+ *         sint32 values_count
+ *         PoolObject[values_count] values
+ *     }
+ */
 class BGVClassPoolEnumType(val values: List<BGVStringPool>) : IBGVClassPoolType {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.ENUM_KLASS)
@@ -246,6 +224,11 @@ class BGVClassPoolEnumType(val values: List<BGVStringPool>) : IBGVClassPoolType 
     }
 }
 
+/**
+ *     KlassType {
+ *         sint8 token = KLASS
+ *     }
+ */
 object BGVClassPoolKlassType : IBGVClassPoolType {
     override fun write(writer: ExpandingByteBuffer) {
         writer.putByte(BGVToken.KLASS)
@@ -259,11 +242,18 @@ object BGVClassPoolKlassType : IBGVClassPoolType {
     override fun toString() = "KLASS"
 }
 
+/**
+ *     ClassPoolObject {
+ *         sint8 type = POOL_CLASS
+ *         String type_name
+ *         ClassPoolType type
+ *     }
+ */
 class BGVClassPool(
     id: UShort,
     val typeName: String,
     val type: IBGVClassPoolType,
-) : BGVNonnullPool(id) {
+) : BGVNewPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
         writer.putByte(BGVToken.POOL_CLASS)
@@ -294,6 +284,17 @@ class BGVClassPool(
     }
 }
 
+/**
+ *    MethodPoolObject {
+ *        sint8 type = POOL_METHOD
+ *        PoolObject declaring_class
+ *        PoolObject method_name
+ *        PoolObject signature
+ *        sint32 modifiers
+ *        sint32 bytes_length
+ *        uint8[bytes_length] bytes
+ *    }
+ */
 class BGVMethodPool(
     id: UShort,
     val declaringClass: BGVClassPool,
@@ -301,7 +302,7 @@ class BGVMethodPool(
     val signature: BGVNodeSignaturePool,
     val modifiers: Int,
     val bytes: ByteArray,
-) : BGVNonnullPool(id) {
+) : BGVNewPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
         writer.putByte(BGVToken.POOL_METHOD)
@@ -349,13 +350,24 @@ class BGVMethodPool(
     }
 }
 
+/**
+ *     ClassPoolObject {
+ *         sint8 type = POOL_NODE_CLASS
+ *         PoolObject node_class
+ *         String name_template
+ *         sint16 input_count
+ *         InputEdgeInfo[input_count] inputs
+ *         sint16 output_count
+ *         OutputEdgeInfo[output_count] outputs
+ *     }
+ */
 class BGVNodeClassPool(
     id: UShort,
     val nodeClass: BGVClassPool,
     val nameTemplate: String,
     val inputs: List<BGVInputEdgeInfo>,
     val outputs: List<BGVOutputEdgeInfo>,
-) : BGVNonnullPool(id) {
+) : BGVNewPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
         writer.putByte(BGVToken.POOL_NODE_CLASS)
@@ -400,13 +412,22 @@ class BGVNodeClassPool(
     }
 }
 
+/**
+ *     FieldPoolObject {
+ *         sint8 type = POOL_FIELD
+ *         PoolObject declaring_class
+ *         PoolObject name
+ *         PoolObject type_name
+ *         sint32 modifiers
+ *     }
+ */
 class BGVFieldPool(
     id: UShort,
     val declaringClass: BGVClassPool,
     val name: BGVStringPool,
     val typeName: BGVStringPool,
     val modifiers: Int,
-) : BGVNonnullPool(id) {
+) : BGVNewPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
         writer.putByte(BGVToken.POOL_FIELD)
@@ -443,11 +464,19 @@ class BGVFieldPool(
     }
 }
 
+/**
+ *     NodeSignaturePool {
+ *         sint8 type = POOL_NODE_SIGNATURE
+ *         sint16 args_count
+ *         PoolObject args[args_count]
+ *         PoolObject return
+ *     }
+ */
 class BGVNodeSignaturePool(
     id: UShort,
     val args: List<BGVStringPool>,
     val returnType: BGVStringPool,
-) : BGVNonnullPool(id) {
+) : BGVNewPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
         writer.putShort(args.size.toShort())
@@ -484,6 +513,15 @@ class BGVNodeSignaturePool(
     }
 }
 
+/**
+ *     SourcePosition {
+ *         PoolObject uri
+ *         String location
+ *         sint32 line
+ *         sint32 start
+ *         sint32 end
+ *     }
+ */
 data class SourcePosition(
     val uri: BGVStringPool,
     val location: String,
@@ -492,13 +530,23 @@ data class SourcePosition(
     val end: Int,
 )
 
+/**
+ *     NodeSourcePositionPool {
+ *         sint8 type = POOL_NODE_SOURCE_POSITION
+ *         PoolObject method
+ *         sint32 bci
+ *         SourcePosition[...until SourcePosition.uri = null] source_positions
+ *         PoolObject caller
+ *     }
+ *
+ */
 class BGVNodeSourcePositionPool(
     id: UShort,
     val method: BGVMethodPool,
     val bci: Int, // bytecode index
     val sourcePositions: List<SourcePosition>,
     val caller: BGVNodeSourcePositionPool?,
-) : BGVNonnullPool(id) {
+) : BGVNewPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
         writer.putByte(BGVToken.POOL_NODE_SOURCE_POSITION)
@@ -566,11 +614,18 @@ class BGVNodeSourcePositionPool(
     }
 }
 
+/**
+ *     NodePoolObject {
+ *         sint8 type = POOL_NODE
+ *         sint32 node_id
+ *         PoolObject node_class
+ *     }
+ */
 class BGVNodePool(
     id: UShort,
     val nodeId: Int,
     val nodeClass: BGVNodeClassPool,
-) : BGVNonnullPool(id) {
+) : BGVNewPool(id) {
     override fun write(writer: ExpandingByteBuffer) {
         super.write(writer)
         writer.putByte(BGVToken.POOL_NODE)

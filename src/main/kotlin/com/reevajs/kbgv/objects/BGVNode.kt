@@ -7,6 +7,16 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
+/**
+ *     Node {
+ *         sint32 id
+ *         PoolObject node_class
+ *         bool has_predecessor
+ *         Props props
+ *         Edge[node_class.inputs.size] edges_in
+ *         Edge[node_class.outputs.size] edges_out
+ *     }
+ */
 data class BGVNode(
     val id: Int,
     val nodeClass: BGVNodeClassPool,
