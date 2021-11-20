@@ -32,7 +32,12 @@ class ExpandingByteBuffer {
 
     fun getDouble(): Double = buf.double
 
-    fun getBytes() = getBytes(getInt())
+    fun getBytes(): ByteArray {
+        val count = getInt()
+        if (count == -1)
+            return ByteArray(0)
+        return getBytes(count)
+    }
 
     fun getBytes(count: Int): ByteArray {
         val array = ByteArray(count)
