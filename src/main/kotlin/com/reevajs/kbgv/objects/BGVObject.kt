@@ -20,7 +20,7 @@ data class BGVObject(
     val children: List<IBGVGroupDocumentGraph>,
 ) : IBGVObject {
     override fun write(writer: ExpandingByteBuffer, context: Context) {
-        writer.putBytes(magic)
+        writer.putBytesRaw(magic)
         writer.putByte(major)
         writer.putByte(minor)
         children.forEach { it.write(writer, context) }

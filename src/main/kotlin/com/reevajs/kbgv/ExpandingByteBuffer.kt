@@ -91,6 +91,10 @@ class ExpandingByteBuffer {
         buf.put(bytes)
     }
 
+    fun putBytesRaw(bytes: ByteArray) = apply {
+        buf.put(bytes)
+    }
+
     fun putString(string: String) = apply {
         ensureCapacity(string.length + 4)
         putBytes(string.toByteArray())
