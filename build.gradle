@@ -67,7 +67,7 @@ if (publishingUsername != null && publishingPassword != null) {
                 if (RELEASE) {
                     version = project.version
                 } else {
-                    version = getGitHash()
+                    version = getGitHash() + "-SNAPSHOT"
                 }
 
                 artifact jarWithSources
